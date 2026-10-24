@@ -1,0 +1,35 @@
+import type { VerseEn } from '../types';
+
+/** Bhagavad Gita chapter 5 — English meanings written for Divine Life. */
+const T: string[] = [
+  'Arjuna said: Krishna, you praise renunciation of action and then again yoga of action. Tell me for certain which one of the two is better.',
+  'The Lord said: Renunciation and the yoga of action both lead to the highest good; but of the two, the yoga of action is better than renunciation of action.',
+  'Know that person to be a constant renunciate who neither hates nor desires; free from opposites, mighty-armed one, such a person is easily freed from bondage.',
+  'The unwise, not the learned, speak of Sankhya and yoga as different. One who is truly established in either gains the fruit of both.',
+  'The state reached by the followers of knowledge is reached also by the followers of yoga. One who sees Sankhya and yoga as one truly sees.',
+  'But renunciation is hard to attain without yoga, mighty-armed one; the sage steady in yoga soon reaches Brahman.',
+  'Steady in yoga, pure in heart, self-controlled, master of the senses, seeing his self as the self of all beings — though acting, such a person is not stained.',
+  'The yogi who knows the truth thinks, "I do nothing at all" — while seeing, hearing, touching, smelling, eating, walking, sleeping, breathing,',
+  'speaking, letting go, holding, opening and closing the eyes — knowing that the senses move among their objects.',
+  'One who acts, offering actions to Brahman and giving up attachment, is not touched by sin, as a lotus leaf is not wetted by water.',
+  'Yogis act with body, mind, intellect and even the senses alone, giving up attachment, for self-purification.',
+  'One steady in yoga, giving up the fruit of action, attains lasting peace; one not steady, attached to the fruit through desire, is bound.',
+  'Mentally renouncing all actions, the self-controlled embodied one dwells happily in the city of nine gates, neither acting nor causing action.',
+  'The Lord does not create agency or actions for the world, nor the link between action and its fruit; it is nature that works.',
+  'The all-pervading one does not take on anyone’s sin or merit. Knowledge is covered by ignorance; that is why beings are deluded.',
+  'But for those whose ignorance is destroyed by knowledge of the self, that knowledge, like the sun, reveals the Supreme.',
+  'Their intellect in That, their self in That, established in That, devoted to That, their impurities washed away by knowledge, they go where there is no return.',
+  'The wise see the same in a learned and humble Brahmin, a cow, an elephant, a dog and one who eats dog-meat.',
+  'Even here, birth is overcome by those whose minds rest in equality. Brahman is flawless and equal; so they are established in Brahman.',
+  'One should not rejoice on getting the pleasant nor be troubled on getting the unpleasant. Steady in understanding, undeluded, the knower of Brahman is established in Brahman.',
+  'Unattached to outer contacts, one finds the happiness that is in the self; joined to Brahman through yoga, such a one enjoys undying happiness.',
+  'Pleasures born of contact are only sources of sorrow; they have a beginning and an end, son of Kunti. The wise do not delight in them.',
+  'One who can withstand, here, before leaving the body, the surge born of desire and anger is a yogi, a happy person.',
+  'One whose happiness is within, whose delight is within, whose light is within — that yogi becomes Brahman and attains the peace of Brahman.',
+  'Sages whose impurities are destroyed, whose doubts are cut, who are self-controlled and devoted to the welfare of all beings, attain the peace of Brahman.',
+  'For those ascetics free from desire and anger, with minds controlled and the self known, the peace of Brahman is near on every side.',
+  'Shutting out external contacts, fixing the gaze between the eyebrows, making even the in-breath and out-breath moving in the nostrils,',
+  'with senses, mind and intellect controlled, intent on freedom, free from desire, fear and anger — that sage is forever free.',
+  'Knowing me as the enjoyer of sacrifices and austerities, the great Lord of all worlds, and the friend of all beings, one attains peace.',
+];
+export const EN5: Record<number, VerseEn> = Object.fromEntries(T.map((m, i) => [i + 1, { m }]));

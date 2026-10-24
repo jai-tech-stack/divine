@@ -41,3 +41,11 @@ example
 # generated native folders
 /ios
 /android
+
+# Private environment and generated app archives
+.env
+.env.*
+!.env.example
+/divine-life-app.zip
+*.apk
+*.aab

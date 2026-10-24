@@ -1,0 +1,36 @@
+import type { VerseEn } from '../types';
+
+/** Bhagavad Gita chapter 7 — English meanings written for Divine Life. */
+const T: string[] = [
+  'The Lord said: Partha, with your mind attached to me, practising yoga and taking refuge in me, hear how you will know me fully, without doubt.',
+  'I will tell you completely this knowledge together with realisation; knowing it, nothing else remains to be known here.',
+  'Among thousands of people, hardly one strives for perfection; and among those who strive and succeed, hardly one knows me in truth.',
+  'Earth, water, fire, air, space, mind, intellect and ego — this is my nature divided eightfold.',
+  'This is my lower nature. Know my other, higher nature, mighty-armed one: the life-principle by which this world is upheld.',
+  'Know that all beings arise from these two. I am the origin of the whole world and also its dissolution.',
+  'There is nothing higher than me, Dhananjaya. All this is strung on me like pearls on a thread.',
+  'I am the taste in water, son of Kunti, the light in the moon and sun, Om in all the Vedas, sound in space, and strength in human beings.',
+  'I am the pure fragrance in the earth, the brilliance in fire, the life in all beings, and the austerity in ascetics.',
+  'Know me, Partha, as the eternal seed of all beings. I am the intelligence of the intelligent and the radiance of the radiant.',
+  'Of the strong, I am strength free from desire and attachment; in beings, best of the Bharatas, I am desire that does not go against dharma.',
+  'Whatever states there are of sattva, rajas and tamas, know they come from me alone. But I am not in them; they are in me.',
+  'Deluded by these three states made of the gunas, the whole world does not know me, who am beyond them and imperishable.',
+  'This divine maya of mine, made of the gunas, is hard to cross. Those who take refuge in me alone cross over this maya.',
+  'Evildoers, the deluded, the lowest of people, those whose knowledge is stolen by maya, and those who take on a demonic nature do not take refuge in me.',
+  'Four kinds of virtuous people worship me, Arjuna: the distressed, the seeker of knowledge, the seeker of wealth, and the wise.',
+  'Of these the wise one, ever united, devoted to the One, is the best. I am very dear to the wise, and the wise is dear to me.',
+  'All of these are noble, but the wise one I consider my very self; for, steady in mind, he is established in me alone as the highest goal.',
+  'At the end of many births the wise one takes refuge in me, knowing "Vasudeva is everything." Such a great soul is very rare.',
+  'Those whose knowledge is carried away by various desires turn to other gods, following various rules, led by their own nature.',
+  'Whatever form a devotee wishes to worship with faith, I make that very faith of theirs steady.',
+  'Endowed with that faith, they worship that form and obtain their desires from it — desires granted in truth by me alone.',
+  'But the fruit gained by those of small understanding is limited. Worshippers of the gods go to the gods; my devotees come to me.',
+  'The unwise think of me, the unmanifest, as having come into manifestation, not knowing my higher nature, imperishable and supreme.',
+  'Veiled by my yoga-maya, I am not revealed to all. This deluded world does not know me, the unborn and imperishable.',
+  'I know the beings of the past, the present and the future, Arjuna, but no one knows me.',
+  'Through the delusion of opposites arising from desire and aversion, Bharata, all beings fall into delusion at birth, scorcher of foes.',
+  'But those of good deeds whose sin has come to an end, freed from the delusion of opposites, worship me with firm resolve.',
+  'Those who take refuge in me and strive for freedom from old age and death know Brahman, the whole of the self, and all of action.',
+  'Those who know me together with the material, the divine and the sacrificial, with minds steadied, know me even at the time of departing.',
+];
+export const EN7: Record<number, VerseEn> = Object.fromEntries(T.map((m, i) => [i + 1, { m }]));
