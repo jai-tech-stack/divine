@@ -1,0 +1,25 @@
+import org.gradle.api.GradleException
+
+// Optional init script for Windows APK builds. Use a current official Ninja binary.
+def ninjaExe = System.getenv('DIVINE_NINJA_EXE')
+if (ninjaExe && !new File(ninjaExe).isFile()) {
+    throw new GradleException('DIVINE_NINJA_EXE must point to an existing Ninja executable')
+}
+allprojects { p ->
+    ['com.android.application', 'com.android.library'].each { pluginId ->
+        p.plugins.withId(pluginId) {
+            p.extensions.configure('android') { android ->
+                android.defaultConfig.externalNativeBuild.cmake.arguments('-DCMAKE_OBJECT_PATH_MAX=240')
+                if (ninjaExe) {
+                    android.defaultConfig.externalNativeBuild.cmake.arguments(
+                        "-DCMAKE_MAKE_PROGRAM=${ninjaExe.replace('\\', '/')}"
+                    )
+                }
+                android.defaultConfig.externalNativeBuild.cmake.arguments(
+                    '-DCMAKE_JOB_POOLS=compile_pool=2',
+                    '-DCMAKE_JOB_POOL_COMPILE=compile_pool'
+                )
+            }
+        }
+    }
+}

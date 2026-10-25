@@ -63,6 +63,17 @@ cd android
 
 APK-களும் generated Android / iOS கோப்புகளும் Git-ல் சேர்க்கப்படுவதில்லை; APK வெளியீட்டு asset ஆக வழங்கப்படும்.
 
+### Windows native build
+
+நீண்ட கோப்புப் பாதையால் பழைய Ninja கருவி தோல்வியடைந்தால், [அதிகாரப்பூர்வ Ninja 1.13.2](https://github.com/ninja-build/ninja/releases/tag/v1.13.2) Windows binary-ஐப் பயன்படுத்தலாம். SDK கருவிகளை மாற்றாமல், தனியாகப் பிரித்தெடுத்த `ninja.exe` பாதையை அமைக்கவும். `JAVA_HOME`, `ANDROID_HOME` அமைந்திருக்க வேண்டும். Project root-லிருந்து:
+
+```powershell
+$env:DIVINE_NINJA_EXE = (Resolve-Path .expo/ninja-runtime/ninja.exe).Path
+.\android\gradlew.bat -p android :app:assembleRelease --init-script ../tools/windows-cmake.gradle --console=plain --max-workers=2
+```
+
+Init script தற்காலிக native object பாதைகளைக் குறைத்து, compiler concurrency-ஐ வரையறுக்கும்; செயலியின் signing அல்லது package பெயரை மாற்றாது.
+
 ## உரையாடல் சேவை
 
 `.env.example`-ஐ அடிப்படையாகக் கொண்டு `EXPO_PUBLIC_WISDOM_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` அமைக்கவும். Provider ரகசியங்கள் செயலியில் சேர்க்கப்படாது. `supabase/functions/wisdom` சேவையைத் தனியாக deploy செய்ய வேண்டும்; APK உருவாக்குவது அதை deploy செய்யாது. சேவை இல்லாதபோது சாதனத்தில் உள்ள தமிழ் வழிகாட்டுதல் பயன்படுத்தப்படும்.
