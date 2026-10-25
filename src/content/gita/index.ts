@@ -1,3 +1,4 @@
+import { EN } from './en';
 import type { ImageSourcePropType } from 'react-native';
 
 import { SCENES } from '../deities';
@@ -139,7 +140,7 @@ export const MOODS = [
 ] as const;
 
 /** English meanings, loaded per chapter as they are written. */
-import { EN } from './en';
+
 export function getEn(c: number, v: number) {
   return EN[c]?.[v];
 }

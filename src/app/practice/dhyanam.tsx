@@ -37,17 +37,20 @@ export default function Dhyanam() {
   const [vol, setVol] = useState(65);
   const drone = useAudioPlayer(require('@/assets/audio/tambura.wav'));
   const gong = useAudioPlayer(require('@/assets/audio/gong.wav'));
-  const breath = useRef(new Animated.Value(0)).current;
-  const last = useRef(Date.now());
+  const [breath] = useState(() => new Animated.Value(0));
+  const last = useRef(0);
 
   const pat = useMemo(() => parsePattern(pattern), [pattern]);
   const cycle = pat.reduce((a, [, s]) => a + s, 0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     drone.loop = true;
   }, [drone]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     drone.volume = (vol / 100) * 0.8;
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     gong.volume = vol / 100;
   }, [vol, drone, gong]);
   useEffect(() => {
@@ -250,7 +253,7 @@ function LotusArt() {
 }
 
 function Ripples({ running }: { running: boolean }) {
-  const vals = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
+  const [vals] = useState(() => [0, 1, 2].map(() => new Animated.Value(0)));
   useEffect(() => {
     if (!running) return;
     const loops = vals.map((v, i) =>
@@ -278,7 +281,7 @@ function Ripples({ running }: { running: boolean }) {
 
 function Eq({ on }: { on: boolean }) {
   const heights = [10, 18, 26, 14, 22, 12, 20, 9];
-  const vals = useRef(heights.map(() => new Animated.Value(0.3))).current;
+  const [vals] = useState(() => Array.from({ length: 8 }, () => new Animated.Value(0.3)));
   useEffect(() => {
     if (!on) {
       vals.forEach((v) => v.setValue(0.3));
@@ -292,8 +295,11 @@ function Eq({ on }: { on: boolean }) {
         ]),
       ),
     );
-    loops.forEach((l, i) => setTimeout(() => l.start(), i * 90));
-    return () => loops.forEach((l) => l.stop());
+    const timers = loops.map((l, i) => setTimeout(() => l.start(), i * 90));
+    return () => {
+      timers.forEach(clearTimeout);
+      loops.forEach((l) => l.stop());
+    };
   }, [on, vals]);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, height: 26, opacity: on ? 1 : 0.45 }}>

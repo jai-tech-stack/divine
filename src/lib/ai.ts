@@ -49,7 +49,7 @@ export async function askWisdom(question: string, story: Story): Promise<WisdomR
     return {
       source: 'offline',
       text:
-        'AI துணை இன்னும் இணைக்கப்படவில்லை (EXPO_PUBLIC_WISDOM_URL அமைக்கப்படவில்லை). அதுவரை, மேலே உள்ள பரிந்துரைக் கேள்விகளுக்குத் தயாரிக்கப்பட்ட பதில்களைப் பார்க்கலாம்.',
+        'உரையாடல் சேவை இன்னும் இணைக்கப்படவில்லை. மேலே உள்ள பரிந்துரைக் கேள்விகளின் விளக்கங்களை இப்போது பார்க்கலாம்.',
     };
   }
   try {
@@ -72,7 +72,7 @@ export async function askWisdom(question: string, story: Story): Promise<WisdomR
     const data = (await res.json()) as WisdomReply;
     return data;
   } catch {
-    return prepared ?? { source: 'offline', text: 'இப்போது AI துணையை அணுக முடியவில்லை. சற்று நேரம் கழித்து மீண்டும் முயலுங்கள்.' };
+    return prepared ?? { source: 'offline', text: 'இப்போது பதிலைப் பெற முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயலுங்கள்.' };
   }
 }
 
@@ -81,7 +81,7 @@ export async function askWithContext(question: string, context: Record<string, u
   if (!ENDPOINT) {
     return {
       source: 'offline',
-      text: 'AI துணை இன்னும் இணைக்கப்படவில்லை. இணைக்கப்பட்டதும், இந்தச் சுலோகத்தின் மூலம், பொருள், விளக்கம் ஆகியவற்றை மட்டுமே அடிப்படையாகக் கொண்டு பதில் தரும்.',
+      text: 'உரையாடல் சேவை இன்னும் இணைக்கப்படவில்லை. இந்தச் சுலோகத்தின் தமிழ் பொருளையும் விளக்கத்தையும் இப்போது படிக்கலாம்.',
     };
   }
   try {
@@ -93,6 +93,6 @@ export async function askWithContext(question: string, context: Record<string, u
     if (!res.ok) throw new Error(String(res.status));
     return (await res.json()) as WisdomReply;
   } catch {
-    return { source: 'offline', text: 'இப்போது AI துணையை அணுக முடியவில்லை. சற்று நேரம் கழித்து மீண்டும் முயலுங்கள்.' };
+    return { source: 'offline', text: 'இப்போது பதிலைப் பெற முடியவில்லை. சிறிது நேரம் கழித்து மீண்டும் முயலுங்கள்.' };
   }
 }

@@ -9,8 +9,9 @@ import { CinematicScene } from '@/components/cinema/CinematicScene';
 import { GoldButton, IconButton, Icons } from '@/components/ui';
 import { getStory } from '@/content';
 import { sceneClip } from '@/content/audioManifest';
-import { estimateMs, hasTamilVoice, narrate, prepareNarrator, stopNarration } from '@/lib/narrator';
+import { estimateMs, narrate, prepareNarrator, stopNarration } from '@/lib/narrator';
 import { C, F } from '@/theme';
+import { progress, useProgress } from '@/lib/progress';
 
 const native = Platform.OS !== 'web';
 
@@ -19,6 +20,7 @@ type Phase = 'intro' | 'playing' | 'ended';
 export default function StoryPlayer() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const story = getStory(id);
+  const saved = useProgress().storyLast;
   const insets = useSafeAreaInsets();
   const [phase, setPhase] = useState<Phase>('intro');
   const [si, setSi] = useState(0);
@@ -26,8 +28,12 @@ export default function StoryPlayer() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voiceNote, setVoiceNote] = useState(false);
-  const fade = useRef(new Animated.Value(1)).current;
+  const [fade] = useState(() => new Animated.Value(1));
   const busy = useRef(false);
+
+  useEffect(() => {
+    if (story && phase !== 'intro') void progress.storyPosition(story.id, si, li, phase === 'ended');
+  }, [story, phase, si, li]);
 
   useEffect(() => {
     prepareNarrator();
@@ -137,7 +143,7 @@ export default function StoryPlayer() {
   if (!story || !scene) {
     return (
       <View style={[st.fill, st.center]}>
-        <Text style={st.sub}>கதை கிடைக்கவில்லை</Text>
+        <Text style={st.sub}>சரிதம் கிடைக்கவில்லை</Text>
       </View>
     );
   }
@@ -226,7 +232,15 @@ export default function StoryPlayer() {
             <Text style={st.title}>{story.title}</Text>
             <Text style={st.sub}>{story.subtitle} · {story.minutes} நிமிடம்</Text>
             <Text style={st.src}>{story.source}</Text>
-            <GoldButton label="கதையைத் தொடங்கு" icon={Icons.play()} onPress={start} style={{ marginTop: 10 }} />
+            <GoldButton label="சரிதத்தைத் தொடங்கு" icon={Icons.play()} onPress={start} style={{ marginTop: 10 }} />
+            {saved?.id === story.id && !saved.completed && (saved.scene > 0 || saved.line > 0) && (
+              <GoldButton label={`விட்ட இடத்திலிருந்து தொடருங்கள் · காட்சி ${saved.scene + 1}`} outline icon={Icons.play()} onPress={() => {
+                const sceneIndex = Math.max(0, Math.min(saved.scene, story.scenes.length - 1));
+                setSi(sceneIndex);
+                setLi(0);
+                setPaused(false); void start();
+              }} />
+            )}
             <Text style={st.hint}>இடப்புறம் தொட்டால் முந்தையது · நடுவில் இடைநிறுத்தம் · வலப்புறம் அடுத்தது</Text>
           </View>
         </View>
@@ -234,7 +248,7 @@ export default function StoryPlayer() {
 
       {phase === 'ended' && (
         <View style={[StyleSheet.absoluteFill, st.introBg, st.center, { paddingHorizontal: 24 }]}>
-          <Text style={st.kicker}>கதை நிறைவு</Text>
+          <Text style={st.kicker}>சரிதம் நிறைவு</Text>
           <Text style={[st.title, { textAlign: 'center' }]}>{story.scenes[story.scenes.length - 1].title}</Text>
           <Text style={[st.sub, { textAlign: 'center', marginBottom: 26 }]}>இப்போது சுலோகம், பொருள், ஞானம் — பிறகு உங்களுக்கான ஒரு சிறிய பயிற்சி.</Text>
           <GoldButton label="சுலோகமும் பொருளும்" icon={Icons.arrow(C.ink)} onPress={() => router.replace(`/stories/${story.id}/learn`)} style={{ alignSelf: 'stretch' }} />
@@ -246,7 +260,7 @@ export default function StoryPlayer() {
 }
 
 function Subtitle({ text }: { text: string }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: native }).start();
   }, [v]);
@@ -260,7 +274,7 @@ function Subtitle({ text }: { text: string }) {
 }
 
 function SceneTitle({ text, index }: { text: string; index: number }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.sequence([
       Animated.timing(v, { toValue: 1, duration: 700, useNativeDriver: native }),

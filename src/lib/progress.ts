@@ -1,10 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
+import { localDateKey } from './date';
 
 /** Reading progress, bookmarks and favourites — kept on the phone. */
 export type Progress = {
   gitaRead: string[]; // "c.v"
   gitaLast: { c: number; v: number } | null;
+  storyLast: { id: string; scene: number; line: number; completed: boolean } | null;
+  bookLast: { id: string; page: number } | null;
   gitaSaved: string[];
   mantraFavs: string[];
   streakDays: string[]; // YYYY-MM-DD with any practice
@@ -18,20 +21,22 @@ export type Progress = {
 };
 
 const KEY = 'divine-life.progress.v1';
-let state: Progress = { gitaRead: [], gitaLast: null, gitaSaved: [], mantraFavs: [], streakDays: [], commitments: [], lastActivity: null, chantLog: [], daily: { date: '', read: 0, chant: 0, talk: 0 } };
-let loaded = false;
+let state: Progress = { gitaRead: [], gitaLast: null, storyLast: null, bookLast: null, gitaSaved: [], mantraFavs: [], streakDays: [], commitments: [], lastActivity: null, chantLog: [], daily: { date: '', read: 0, chant: 0, talk: 0 } };
+let loading: Promise<void> | null = null;
+let writes = Promise.resolve();
 const listeners = new Set<(p: Progress) => void>();
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDateKey();
 
-async function load() {
-  if (loaded) return;
-  loaded = true;
-  try {
-    const raw = await AsyncStorage.getItem(KEY);
-    if (raw) state = { ...state, ...JSON.parse(raw) };
-  } catch {}
-  emit();
+function load(): Promise<void> {
+  if (!loading) loading = (async () => {
+    try {
+      const raw = await AsyncStorage.getItem(KEY);
+      if (raw) state = { ...state, ...JSON.parse(raw) };
+    } catch {}
+    emit();
+  })();
+  return loading;
 }
 
 function emit() {
@@ -41,14 +46,27 @@ function emit() {
 function save(next: Progress) {
   state = next;
   emit();
-  AsyncStorage.setItem(KEY, JSON.stringify(state)).catch(() => {});
+  const snapshot = JSON.stringify(state);
+  writes = writes.then(() => AsyncStorage.setItem(KEY, snapshot)).catch(() => {});
 }
 
 const dayOf = (): Progress['daily'] => (state.daily && state.daily.date === today() ? state.daily : { date: today(), read: 0, chant: 0, talk: 0 });
 
 const toggle = (list: string[], key: string) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]);
 
-export const progress = {
+const actions = {
+  bookPosition(id: string, page: number) {
+    const date = today();
+    save({ ...state, bookLast: { id, page }, daily: { ...dayOf(), read: Math.max(1, dayOf().read) },
+      streakDays: state.streakDays.includes(date) ? state.streakDays : [...state.streakDays.slice(-60), date] });
+  },
+  storyPosition(id: string, scene: number, line: number, completed = false) {
+    const date = today();
+    save({ ...state, storyLast: { id, scene, line, completed },
+      daily: { ...dayOf(), read: Math.max(1, dayOf().read) },
+      streakDays: state.streakDays.includes(date) ? state.streakDays : [...state.streakDays.slice(-60), date],
+    });
+  },
   markRead(c: number, v: number) {
     const key = `${c}.${v}`;
     const d = today();
@@ -95,6 +113,12 @@ export const progress = {
   },
 };
 
+// A quick first tap must wait for saved data, rather than overwrite it during hydration.
+export const progress = Object.fromEntries(Object.entries(actions).map(([name, action]) => [name, async (...args: unknown[]) => {
+  await load();
+  (action as (...values: unknown[]) => void)(...args);
+}])) as { [K in keyof typeof actions]: (...args: Parameters<typeof actions[K]>) => Promise<void> };
+
 export function useProgress(): Progress {
   const [p, setP] = useState(state);
   useEffect(() => {
@@ -108,12 +132,13 @@ export function useProgress(): Progress {
 }
 
 /** Consecutive days up to today with any recorded practice. */
-export function streak(days: string[]): number {
+export function streak(days: string[], now = new Date()): number {
   const set = new Set(days);
   let n = 0;
-  const d = new Date();
+  const d = new Date(now);
+  if (!set.has(localDateKey(d))) d.setDate(d.getDate() - 1);
   for (;;) {
-    const k = d.toISOString().slice(0, 10);
+    const k = localDateKey(d);
     if (!set.has(k)) break;
     n++;
     d.setDate(d.getDate() - 1);

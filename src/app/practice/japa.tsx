@@ -48,13 +48,15 @@ export default function Japa() {
   const [done, setDone] = useState(false);
   const bell = useAudioPlayer(require('@/assets/audio/bell.wav'));
   const gong = useAudioPlayer(require('@/assets/audio/gong.wav'));
-  const ripple = useRef(new Animated.Value(0)).current;
-  const pop = useRef(new Animated.Value(1)).current;
-  const burst = useRef(new Animated.Value(0)).current;
+  const [ripple] = useState(() => new Animated.Value(0));
+  const [pop] = useState(() => new Animated.Value(1));
+  const [burst] = useState(() => new Animated.Value(0));
   const countRef = useRef(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     bell.volume = vol / 100;
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     gong.volume = vol / 100;
   }, [vol, bell, gong]);
 
@@ -212,7 +214,7 @@ export default function Japa() {
 }
 
 function Bead({ x, y, lit, current }: { x: number; y: number; lit: boolean; current: boolean }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (!current) {
       v.setValue(0);
@@ -240,7 +242,7 @@ function Bead({ x, y, lit, current }: { x: number; y: number; lit: boolean; curr
 }
 
 function Mandala({ size, offset }: { size: number; offset: number }) {
-  const spin = useRef(new Animated.Value(0)).current;
+  const [spin] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const a = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 90000, easing: Easing.linear, useNativeDriver: native }));
     a.start();
@@ -264,7 +266,7 @@ function Mandala({ size, offset }: { size: number; offset: number }) {
 }
 
 export function OmGlyph({ size }: { size: number }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([

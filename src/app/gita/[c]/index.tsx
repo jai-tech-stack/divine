@@ -52,7 +52,6 @@ export default function GitaChapter() {
   };
   const resume = verses.find((v) => !readSet.has(`${n}.${v.v}`)) ?? verses[0];
 
-  let lastMoment = '';
   return (
     <View style={{ flex: 1, backgroundColor: pal.bg }}>
       <View style={[st.appbar, { paddingTop: insets.top + 4 }]}>
@@ -109,14 +108,13 @@ export default function GitaChapter() {
         </View>
 
         {/* the dialogue */}
-        {verses.map((v) => {
+        {verses.map((v, index) => {
           const who = speakerFor(n, v.v);
           const side = focusForSpeaker(who);
           const note = getNote(n, v.v);
           const en = prefs.meaning === 'en' ? getEn(n, v.v) : undefined;
           const moment = momentFor(n, v.v);
-          const showMoment = moment !== lastMoment;
-          lastMoment = moment;
+          const showMoment = index === 0 || moment !== momentFor(n, verses[index - 1].v);
           const read = readSet.has(`${n}.${v.v}`);
           const isK = side === 'krishna';
           const isA = side === 'arjuna';

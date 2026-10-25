@@ -1,6 +1,6 @@
 import * as Speech from 'expo-speech';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -75,7 +75,7 @@ export default function Learn() {
 }
 
 function Reveal({ children }: { children: React.ReactNode }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: native }).start();
   }, [v]);
@@ -86,7 +86,7 @@ type StepProps = { story: NonNullable<ReturnType<typeof getStory>> };
 
 function VerseStep({ story }: StepProps) {
   const [speaking, setSpeaking] = useState(false);
-  const glow = useRef(new Animated.Value(0)).current;
+  const [glow] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -145,8 +145,8 @@ function MeaningStep({ story }: StepProps) {
       </View>
       <Text style={st.sectionH}>முழுப் பொருள்</Text>
       <T style={{ fontSize: 17, lineHeight: 31 }}>{story.verse.meaning}</T>
-      <Text style={st.sectionH}>கதையோடு இணைப்பு</Text>
-      <T>பிருதுவின் சினம் "பூமியைப் பிளப்பேன்" என்ற மயக்கத்துக்குக் கொண்டு சென்றது — அதுவே சுலோகத்தின் முதல் படி. பூமி பேசியபோது அவன் நின்றான்; நினைவும் பகுத்தறிவும் திரும்பின; அழிவு தவிர்க்கப்பட்டது.</T>
+      <Text style={st.sectionH}>சரிதம் உணர்த்தும் நெறி</Text>
+      <T>பிருதுவின் சினம் &quot;பூமியைப் பிளப்பேன்&quot; என்ற மயக்கத்துக்குக் கொண்டு சென்றது — அதுவே சுலோகத்தின் முதல் படி. பூமி பேசியபோது அவன் நின்றான்; நினைவும் பகுத்தறிவும் திரும்பின; அழிவு தவிர்க்கப்பட்டது.</T>
     </View>
   );
 }
@@ -168,7 +168,7 @@ function WisdomStep({ story }: StepProps) {
 }
 
 function Stagger({ i, children }: { i: number; children: React.ReactNode }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: 500, delay: 160 * i, easing: Easing.out(Easing.cubic), useNativeDriver: native }).start();
   }, [v, i]);
@@ -236,7 +236,7 @@ function AskStep({ story }: StepProps) {
     <View style={{ gap: 16 }}>
       <View style={st.panel}>
         <T style={st.small}>
-          இது ஒரு AI ஞானத் துணை — தெய்வமோ குருவோ அல்ல. கதை, சுலோகம், ஞானக் குறிப்புகளின் அடிப்படையில் மட்டும் பதில் தரும். மருத்துவ அல்லது அவசர நிலைகளில் நம்பிக்கையான மனிதரை அணுகுங்கள்.
+          சரிதம், சுலோகம் மற்றும் ஞானக் குறிப்புகளின் அடிப்படையிலான ஆன்மிக உரையாடல். உங்கள் மனதில் இருப்பதைப் பகிருங்கள்.
         </T>
         {!aiConfigured() && <Badge text="ஆஃப்லைன் · தயாரிக்கப்பட்ட பதில்கள்" tone="muted" />}
       </View>
@@ -256,7 +256,7 @@ function AskStep({ story }: StepProps) {
             <View style={st.aBubble}>
               <T>{m.a.text}</T>
               {!!m.a.followUp && <T style={{ color: C.goldLight, marginTop: 8 }}>{m.a.followUp}</T>}
-              <Text style={st.srcTag}>{m.a.source === 'offline' ? 'தயாரிக்கப்பட்ட பதில்' : `AI · ${m.a.source}`}</Text>
+              <Text style={st.srcTag}>{m.a.source === 'offline' ? 'தயாரிக்கப்பட்ட விளக்கம்' : 'நூல்களின் அடிப்படையிலான விளக்கம்'}</Text>
             </View>
           </View>
         </Reveal>

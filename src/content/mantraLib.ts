@@ -16,14 +16,23 @@ export type Mantra = {
   sections?: StotraSection[];
   /** where the text comes from */
   source?: string;
+  originalLanguage?: 'ta' | 'sa' | 'hi';
+  aliases?: string[];
+  practice?: { days: string; steps: string[]; note?: string };
+  references?: { title: string; url: string }[];
 };
 
 export type StotraVerse = { sa: string; ta: string; en: string; mean?: string };
 export type StotraSection = { key: string; title: string; titleEn: string; verses: StotraVerse[] };
 
 /** Texts: traditional Sanskrit (public domain); Tamil meanings written for Divine Life (AI draft, awaiting review). */
-const BASE = require('./mantras.json') as Mantra[];
+const BASE = (require('./mantras.json') as Mantra[]).map(m => m.id.startsWith('saraswati-') ? { ...m, deity: 'saraswati' } : m);
 const VSN = require('./stotras_vsn.json') as StotraSection[];
+const GANESHA = require('./ganesha.json') as Mantra[];
+const SHIVA = (require('./shiva.json') as Mantra[]).map(m => m.id.includes('bhairav') ? { ...m, deity: 'bhairava' } : m);
+const MURUGAN = require('./murugan.json') as Mantra[];
+const DEVOTIONAL = require('./devotional.json') as Mantra[];
+const BASE_WITHOUT_REPLACED = BASE.filter(m => !DEVOTIONAL.some(full => full.id === m.id));
 
 const vishnuSahasranama: Mantra = {
   id: 'vishnu-sahasranama',
@@ -39,7 +48,7 @@ const vishnuSahasranama: Mantra = {
   source: 'சம்ஸ்கிருத மூலம்: மகாபாரதம், அனுசாசன பர்வம் 149 (hindu-devotional-texts, MIT உரிமம்). தமிழ், ஆங்கில எழுத்து மாற்றம்: Divine Life.',
 };
 
-export const MANTRAS: Mantra[] = [...BASE.slice(0, 9), vishnuSahasranama, ...BASE.slice(9)];
+export const MANTRAS: Mantra[] = [...BASE_WITHOUT_REPLACED.slice(0, 2), ...GANESHA, ...SHIVA, ...MURUGAN, ...DEVOTIONAL, ...BASE_WITHOUT_REPLACED.slice(2, 9), vishnuSahasranama, ...BASE_WITHOUT_REPLACED.slice(9)];
 
 export type MantraGroup = { id: string; ta: string; image: ImageSourcePropType };
 
@@ -49,6 +58,12 @@ export const MANTRA_GROUPS: MantraGroup[] = [
     return { id, ta: d.ta, image: d.image };
   }),
   { id: 'krishna', ta: 'கிருஷ்ணர்', image: SCENES.krishnaArjuna },
+  { id: 'alvar', ta: 'ஆழ்வார் அருளிச்செயல்கள்', image: SCENES.temple },
+  ...[
+    ['vamana', 'வாமனர்'], ['varaha', 'வராஹ மூர்த்தி'], ['guruvayur', 'குருவாயூரப்பன்'], ['venkatesha', 'வேங்கடேசப் பெருமாள்'],
+    ['lakshmi', 'மகாலக்ஷ்மி'], ['durga', 'துர்க்கை'], ['saraswati', 'சரஸ்வதி'], ['kali', 'காளி'], ['bagalamukhi', 'பகளாமுகி'],
+    ['lalita', 'லலிதாம்பிகை'], ['annapurna', 'அன்னபூரணி'], ['meenakshi', 'மீனாட்சி'], ['bhairava', 'காலபைரவர்'], ['dattatreya', 'தத்தாத்ரேயர்'],
+  ].map(([id, ta]) => ({ id, ta, image: SCENES.temple })),
   { id: 'universal', ta: 'பொது மந்திரங்கள்', image: SCENES.temple },
 ];
 

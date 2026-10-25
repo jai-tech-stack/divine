@@ -10,6 +10,7 @@ import { COLLECTIONS } from '@/content/library';
 import { C, F } from '@/theme';
 
 const EXTRA = [
+  { title: 'மூல நூல்கள்', subtitle: '10 அருள்நூல்கள் · வாசிக்க · தேட · நகலெடுக்க', href: '/library/books', image: SCENES.library },
   { title: 'பகவத் கீதை', subtitle: '700 சுலோகங்கள் · தருணம், பொருள், ஞானம்', href: '/gita', image: SCENES.krishnaArjuna },
   { title: 'மந்திரங்கள்', subtitle: 'தெய்வம் வாரியாக · வரிக்கு வரி பொருள்', href: '/mantras', image: SCENES.temple },
   { title: 'தெய்வங்கள்', subtitle: '10 தெய்வங்கள் · உங்கள் தெய்வத்தைத் தேர்ந்தெடுங்கள்', href: '/deity', image: SCENES.shivaNandi },
@@ -28,8 +29,8 @@ export default function Library() {
           </IconButton>
         </View>
         <View style={st.heroText}>
-          <Text style={st.title}>ஞான நூலகம்</Text>
-          <Text style={st.sub}>நூல்கள் · மந்திரங்கள் · அருளாளர்கள் · தத்துவம்</Text>
+          <Text style={st.title}>ஞான நூல்கள்</Text>
+          <Text style={st.sub}>அருள்நூல்கள் · யோகநெறி · தத்துவம்</Text>
         </View>
       </View>
       <View style={{ paddingHorizontal: 16, gap: 12 }}>
@@ -44,7 +45,7 @@ export default function Library() {
             <View style={{ justifyContent: 'center', paddingRight: 14 }}>{Icons.arrow(C.goldLight)}</View>
           </Pressable>
         ))}
-        <Text style={st.note}>விளக்கங்கள் Divine Life எழுதியவை. அடுத்து: 63 நாயன்மார்கள், திருக்குறள் அறம், உபநிடதக் கதைகள்.</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/library/sources')} style={{ paddingVertical: 12 }}><Text style={st.note}>மூலநூல் குறிப்புகள்</Text></Pressable>
       </View>
     </ScrollView>
   );

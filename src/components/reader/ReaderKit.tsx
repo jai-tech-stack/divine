@@ -19,7 +19,7 @@ export function usePalette(): { pal: Palette; prefs: Prefs } {
   return { pal: PALETTE[prefs.readTheme] ?? PALETTE.sepia, prefs };
 }
 
-export const SCRIPT_LABEL = { ta: 'தமிழ்', sa: 'संस्कृत', en: 'English' } as const;
+export const SCRIPT_LABEL = { ta: 'தமிழ்', sa: 'देवनागरी', en: 'English' } as const;
 export const MEANING_LABEL = { ta: 'தமிழ்', en: 'English' } as const;
 
 /** Font for a script, scaled. */
@@ -52,10 +52,9 @@ export function Segment<T extends string>({ value, options, onChange, pal }: { v
 
 /** The quick language bar shown at the top of a reader. */
 export function LangBar({ pal, onSettings }: { pal: Palette; onSettings: () => void }) {
-  const prefs = usePrefs();
   return (
     <View style={[st.langBar, { backgroundColor: pal.bg, borderBottomColor: pal.line }]}>
-      <Segment pal={pal} value={prefs.script} onChange={(script) => setPrefs({ script })} options={(['ta', 'sa', 'en'] as const).map((id) => ({ id, label: SCRIPT_LABEL[id] }))} />
+      <Text style={{ color: pal.ink, fontFamily: F.taSemi }}>தமிழில் வாசிக்க</Text>
       <Pressable accessibilityRole="button" accessibilityLabel="வாசிப்பு அமைப்புகள்" onPress={onSettings} style={[st.aa, { borderColor: pal.line, backgroundColor: pal.chip }]}>
         <Ionicons name="text-outline" size={18} color={pal.ink} />
         <Ionicons name="options-outline" size={16} color={pal.ink} />
@@ -75,22 +74,14 @@ export function ReaderSettings({ open, onClose }: { open: boolean; onClose: () =
         <View style={[st.grab, { backgroundColor: pal.line }]} />
         <Text style={[st.sheetH, { color: pal.ink }]}>வாசிப்பு அமைப்புகள்</Text>
 
-        <Row label="சுலோக எழுத்து" pal={pal}>
-          <Segment pal={pal} value={prefs.script} onChange={(script) => setPrefs({ script })} options={(['ta', 'sa', 'en'] as const).map((id) => ({ id, label: SCRIPT_LABEL[id] }))} />
-        </Row>
-        <Row label="பொருள் மொழி" pal={pal}>
-          <Segment pal={pal} value={prefs.meaning} onChange={(meaning) => setPrefs({ meaning })} options={(['ta', 'en'] as const).map((id) => ({ id, label: MEANING_LABEL[id] }))} />
-        </Row>
-        <Row label="இரண்டாம் எழுத்தும் காட்டு" pal={pal}>
-          <Segment pal={pal} value={prefs.showTranslit ? 'on' : 'off'} onChange={(v) => setPrefs({ showTranslit: v === 'on' })} options={[{ id: 'on', label: 'ஆம்' }, { id: 'off', label: 'இல்லை' }]} />
-        </Row>
+        <Text style={{ color: pal.sub, fontFamily: F.ta }}>பாடல்களும் பொருளும் தமிழில் காட்டப்படும்.</Text>
         <Row label="எழுத்து அளவு" pal={pal}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Pressable accessibilityLabel="சிறிதாக்கு" onPress={() => setPrefs({ fontScale: Math.max(0.8, +(prefs.fontScale - 0.1).toFixed(2)) })} style={[st.round, { borderColor: pal.line }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="சிறிதாக்கு" onPress={() => setPrefs({ fontScale: Math.max(0.8, +(prefs.fontScale - 0.1).toFixed(2)) })} style={[st.round, { borderColor: pal.line }]}>
               <Text style={{ color: pal.ink, fontSize: 14, fontWeight: '700' }}>அ−</Text>
             </Pressable>
             <Text style={{ color: pal.sub, minWidth: 44, textAlign: 'center' }}>{Math.round(prefs.fontScale * 100)}%</Text>
-            <Pressable accessibilityLabel="பெரிதாக்கு" onPress={() => setPrefs({ fontScale: Math.min(1.6, +(prefs.fontScale + 0.1).toFixed(2)) })} style={[st.round, { borderColor: pal.line }]}>
+            <Pressable accessibilityRole="button" accessibilityLabel="பெரிதாக்கு" onPress={() => setPrefs({ fontScale: Math.min(1.6, +(prefs.fontScale + 0.1).toFixed(2)) })} style={[st.round, { borderColor: pal.line }]}>
               <Text style={{ color: pal.ink, fontSize: 18, fontWeight: '700' }}>அ+</Text>
             </Pressable>
           </View>
@@ -98,7 +89,7 @@ export function ReaderSettings({ open, onClose }: { open: boolean; onClose: () =
         <Row label="பின்னணி" pal={pal}>
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {(['sepia', 'light', 'dark'] as const).map((t) => (
-              <Pressable key={t} accessibilityRole="button" accessibilityLabel={t} onPress={() => setPrefs({ readTheme: t })} style={[st.swatch, { backgroundColor: PALETTE[t].bg, borderColor: prefs.readTheme === t ? pal.accent : pal.line }]}>
+              <Pressable key={t} accessibilityRole="button" accessibilityLabel={{ sepia: 'மென் பழுப்பு', light: 'வெளிர் பின்னணி', dark: 'இருண்ட பின்னணி' }[t]} onPress={() => setPrefs({ readTheme: t })} style={[st.swatch, { backgroundColor: PALETTE[t].bg, borderColor: prefs.readTheme === t ? pal.accent : pal.line }]}>
                 <Text style={{ color: PALETTE[t].ink, fontFamily: F.taSemi }}>அ</Text>
               </Pressable>
             ))}

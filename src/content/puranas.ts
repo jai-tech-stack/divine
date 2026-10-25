@@ -1,0 +1,21 @@
+/** Section starts checked against the supplied பதினெண் புராணங்கள் scan (source-page numbering). */
+export const PURANA_SECTIONS = [
+  { id: 'brahma', title: 'பிரம்ம புராணம்', page: 30 },
+  { id: 'padma', title: 'பத்ம புராணம்', page: 72 },
+  { id: 'vishnu', title: 'விஷ்ணு புராணம்', page: 108 },
+  { id: 'vayu', title: 'வாயு புராணம்', page: 164 },
+  { id: 'bhagavata', title: 'பாகவத புராணம்', page: 214 },
+  { id: 'narada', title: 'நாரத புராணம்', page: 270 },
+  { id: 'markandeya', title: 'மார்க்கண்டேய புராணம்', page: 308 },
+  { id: 'agni', title: 'அக்னி புராணம்', page: 366 },
+  { id: 'bhavishya', title: 'பவிஷ்ய புராணம்', page: 420 },
+  { id: 'brahmavaivarta', title: 'பிரம்ம வைவர்த்த புராணம்', page: 450 },
+  { id: 'linga', title: 'இலிங்க புராணம்', page: 490 },
+  { id: 'varaha', title: 'வராக புராணம்', page: 510 },
+  { id: 'skanda', title: 'ஸ்கந்த புராணம்', page: 560 },
+  { id: 'vamana', title: 'வாமன புராணம்', page: 615 },
+  { id: 'kurma', title: 'கூர்ம புராணம்', page: 651 },
+  { id: 'matsya', title: 'மச்ச புராணம்', page: 685 },
+  { id: 'garuda', title: 'கருட புராணம்', page: 723 },
+  { id: 'brahmanda', title: 'பிரம்மாண்ட புராணம்', page: null },
+];

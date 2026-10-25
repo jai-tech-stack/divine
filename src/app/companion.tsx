@@ -23,12 +23,13 @@ export default function Companion() {
   const insets = useSafeAreaInsets();
   const p = useProgress();
   const { pal, prefs } = usePalette();
-  const en = prefs.meaning === 'en';
+  const en = false;
   const deity = deityForToday(prefs.deity);
   const topic = useMemo(() => topicFrom(p), [p.lastActivity, p.gitaLast]); // eslint-disable-line react-hooks/exhaustive-deps
   const first = useMemo(() => opening(topic, en), [topic, en]);
-  const [msgs, setMsgs] = useState<ChatMsg[]>([]);
-  const [suggest, setSuggest] = useState<string[]>([]);
+  const [msgs, setMsgs] = useState<ChatMsg[]>(() => [{ id: nid(), who: 'guide', text: first.text, ref: topic ?? undefined }]);
+  const [suggest, setSuggest] = useState<string[]>(first.suggestions);
+  const [previousOpening, setPreviousOpening] = useState(first);
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
   const [speaking, setSpeaking] = useState<string | null>(null);
@@ -36,15 +37,18 @@ export default function Companion() {
   const [talking, setTalking] = useState(false);
   const [lastReply, setLastReply] = useState('');
   const voiceRef = useRef(false);
-  voiceRef.current = voice;
+  useEffect(() => {
+    voiceRef.current = voice;
+  }, [voice]);
   const scroll = useRef<any>(null);
   const input = useRef<any>(null);
-  const pulse = useRef(new Animated.Value(0)).current;
+  const [pulse] = useState(() => new Animated.Value(0));
 
-  useEffect(() => {
+  if (previousOpening !== first) {
+    setPreviousOpening(first);
     setMsgs([{ id: nid(), who: 'guide', text: first.text, ref: topic ?? undefined }]);
     setSuggest(first.suggestions);
-  }, [first, topic]);
+  }
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -79,11 +83,11 @@ export default function Companion() {
       setLastReply(r.text);
       Speech.stop();
       setTalking(true);
-      Speech.speak(r.text, { language: en ? 'en-IN' : 'ta-IN', rate: 0.93, onDone: () => setTalking(false), onStopped: () => setTalking(false), onError: () => setTalking(false) });
+      Speech.speak(r.text, { language: 'ta-IN', rate: 0.93, onDone: () => setTalking(false), onStopped: () => setTalking(false), onError: () => setTalking(false) });
     }
   };
 
-  const ear = useListen(en ? 'en-IN' : 'ta-IN', (t) => send(t));
+  const ear = useListen('ta-IN', (t) => send(t));
   const orbState: OrbState = ear.listening ? 'listening' : busy ? 'thinking' : talking ? 'speaking' : 'idle';
   const tapMic = () => {
     if (ear.listening) return ear.stop();
@@ -108,7 +112,7 @@ export default function Companion() {
     }
     Speech.stop();
     setSpeaking(m.id);
-    Speech.speak(m.text, { language: en ? 'en-IN' : 'ta-IN', rate: 0.95, onDone: () => setSpeaking(null), onStopped: () => setSpeaking(null), onError: () => setSpeaking(null) });
+    Speech.speak(m.text, { language: 'ta-IN', rate: 0.95, onDone: () => setSpeaking(null), onStopped: () => setSpeaking(null), onError: () => setSpeaking(null) });
   };
 
   const openRef = (ref: ChatMsg['ref']) => {
@@ -132,7 +136,7 @@ export default function Companion() {
           </Pressable>
           <View style={st.label}>
             <Ionicons name="sparkles" size={13} color="#2B1D0E" />
-            <Text style={st.labelT}>Divine Life துணை · AI</Text>
+            <Text style={st.labelT}>கடவுளிடம் கேளுங்கள்</Text>
           </View>
           <View style={{ width: 40 }} />
         </View>
@@ -142,7 +146,7 @@ export default function Companion() {
             <Image source={deity.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           </Animated.View>
         </View>
-        <Text style={st.status}>{busy ? (en ? 'Looking in the texts…' : 'நூல்களில் தேடுகிறேன்…') : en ? 'Ask about what you read, or how you feel' : 'படித்ததைப் பற்றியோ, உங்கள் மனதைப் பற்றியோ கேளுங்கள்'}</Text>
+        <Text style={st.status}>{busy ? (en ? 'Reflecting with the texts…' : 'உங்கள் கேள்வியுடன் அருள்நூல்களைச் சிந்திக்கிறேன்…') : en ? 'Share what is on your mind' : 'மனதில் இருப்பதைப் பகிருங்கள் · அன்புடன் வழிகாட்டல்'}</Text>
       </View>
 
       <ScrollView ref={scroll} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 20 }} keyboardShouldPersistTaps="handled">
@@ -186,9 +190,7 @@ export default function Companion() {
           </View>
         )}
         <Text style={[st.fine, { color: pal.sub }]}>
-          {en
-            ? 'This guide is an AI, not a god or a guru. It answers from the Gita and the texts in this app. For medical, legal or emergency matters, please reach a qualified person.'
-            : 'இந்தத் துணை ஒரு AI — தெய்வமோ குருவோ அல்ல. கீதை மற்றும் இந்த app-இல் உள்ள நூல்களிலிருந்து மட்டுமே பதில் சொல்லும். மருத்துவ, சட்ட, அவசர விஷயங்களுக்குத் தகுந்த நபரை அணுகுங்கள்.'}
+          கீதை மற்றும் இச்செயலியின் நூல்களை அடிப்படையாகக் கொண்ட ஆன்மிக உரையாடல். பதில்கள் வழிகாட்டும் விளக்கங்கள்; இறைவனின் நேரடி வாக்காகக் கருத வேண்டாம்.
         </Text>
       </ScrollView>
 
@@ -201,7 +203,7 @@ export default function Companion() {
           ref={input}
           value={q}
           onChangeText={setQ}
-          placeholder={en ? 'Type, or use the keyboard mic…' : 'எழுதுங்கள், அல்லது கீபோர்டின் மைக்கில் பேசுங்கள்…'}
+          placeholder={en ? 'Share what is on your mind…' : 'உங்கள் மனதில் இருப்பதை எழுதுங்கள்…'}
           placeholderTextColor={pal.sub}
           style={[st.input, { color: pal.ink, borderColor: pal.line, backgroundColor: pal.bg }]}
           multiline
@@ -221,7 +223,7 @@ export default function Companion() {
             </Pressable>
             <View style={st.label}>
               <Ionicons name="sparkles" size={13} color="#2B1D0E" />
-              <Text style={st.labelT}>Divine Life துணை · AI</Text>
+              <Text style={st.labelT}>கடவுளிடம் கேளுங்கள்</Text>
             </View>
             <View style={{ width: 40 }} />
           </View>
@@ -233,12 +235,12 @@ export default function Companion() {
             <Text style={{ fontFamily: F.ta, fontSize: 15, lineHeight: 25, color: '#F3E1BC', textAlign: 'center', minHeight: 80 }} numberOfLines={5}>
               {ear.listening ? ear.partial : ear.error ?? lastReply}
             </Text>
-            {!sttAvailable && <Text style={{ fontFamily: F.ta, fontSize: 12, color: '#C9B28A', textAlign: 'center' }}>Expo Go-வில் மைக் பதிவு இயங்காது. dev build (npx expo run:android) செய்தால் குரல் உரையாடல் இயங்கும். இப்போது எழுதிக் கேளுங்கள்.</Text>}
+            {!sttAvailable && <Text style={{ fontFamily: F.ta, fontSize: 12, color: '#C9B28A', textAlign: 'center' }}>இந்தப் பதிப்பில் குரல் பதிவு கிடைக்கவில்லை. உங்கள் கேள்வியை எழுதிக் கேளுங்கள்.</Text>}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={ear.listening ? 'நிறுத்து' : 'பேசு'} onPress={tapMic} disabled={!sttAvailable || busy} style={[st.bigMic, ear.listening && { backgroundColor: '#D8402E' }, (!sttAvailable || busy) && { opacity: 0.4 }]}>
             <Ionicons name={ear.listening ? 'stop' : 'mic'} size={34} color="#fff" />
           </Pressable>
-          <Text style={{ fontFamily: F.ta, fontSize: 11, color: '#C9B28A', marginTop: 12, paddingHorizontal: 30, textAlign: 'center' }}>இது AI; தெய்வம் அல்ல. கீதை மற்றும் app-இல் உள்ள நூல்களிலிருந்து மட்டும் பதில் சொல்லும்.</Text>
+          <Text style={{ fontFamily: F.ta, fontSize: 11, color: '#C9B28A', marginTop: 12, paddingHorizontal: 30, textAlign: 'center' }}>நூல்களின் அடிப்படையிலான ஆன்மிக வழிகாட்டல்.</Text>
         </View>
       )}
     </KeyboardAvoidingView>

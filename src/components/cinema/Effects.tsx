@@ -1,10 +1,16 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Polygon, RadialGradient, Rect, Stop } from 'react-native-svg';
 
 import type { Particles as ParticleKind } from '@/content/types';
 
 const native = Platform.OS !== 'web';
+
+// Stable pseudo-random positions keep decorative layouts consistent across renders.
+const noise = (seed: number) => {
+  const value = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+  return value - Math.floor(value);
+};
 
 type P = { left: number; top: number; size: number; dur: number; delay: number; drift: number; rise: number };
 
@@ -20,14 +26,14 @@ export function Particles({ kind, paused }: { kind: ParticleKind; paused: boolea
   const look = kind === 'none' ? null : LOOK[kind];
   const items = useMemo<P[]>(() => {
     if (!look) return [];
-    return Array.from({ length: look.count }, () => ({
-      left: Math.random() * 100,
-      top: look.rise < 0 ? -10 + Math.random() * 30 : 25 + Math.random() * 80,
-      size: look.size[0] + Math.random() * (look.size[1] - look.size[0]),
-      dur: look.dur[0] + Math.random() * (look.dur[1] - look.dur[0]),
-      delay: Math.random() * 4000,
-      drift: (Math.random() - 0.5) * 2 * look.drift,
-      rise: look.rise * (0.6 + Math.random() * 0.6),
+    return Array.from({ length: look.count }, (_, i) => ({
+      left: noise(i * 17 + 1) * 100,
+      top: look.rise < 0 ? -10 + noise(i * 17 + 2) * 30 : 25 + noise(i * 17 + 3) * 80,
+      size: look.size[0] + noise(i * 17 + 4) * (look.size[1] - look.size[0]),
+      dur: look.dur[0] + noise(i * 17 + 5) * (look.dur[1] - look.dur[0]),
+      delay: noise(i * 17 + 6) * 4000,
+      drift: (noise(i * 17 + 7) - 0.5) * 2 * look.drift,
+      rise: look.rise * (0.6 + noise(i * 17 + 8) * 0.6),
     }));
   }, [look]);
   if (!look) return null;
@@ -41,7 +47,7 @@ export function Particles({ kind, paused }: { kind: ParticleKind; paused: boolea
 }
 
 function Particle({ p, color, round, glow, twinkle, paused }: { p: P; color: string; round: boolean; glow: boolean; twinkle: boolean; paused: boolean }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (paused) {
       v.stopAnimation();
@@ -90,8 +96,8 @@ function Particle({ p, color, round, glow, twinkle, paused }: { p: P; color: str
 
 /** Slowly turning god-rays centred on (x, y) in screen pixels. */
 export function Rays({ x, y, color, opacity, paused }: { x: number; y: number; color: string; opacity: number; paused: boolean }) {
-  const spin = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(0)).current;
+  const [spin] = useState(() => new Animated.Value(0));
+  const [pulse] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (paused) return;
     const a = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 90000, easing: Easing.linear, useNativeDriver: native }));

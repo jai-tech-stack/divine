@@ -1,0 +1,11 @@
+# Accepted content requests and review boundaries
+
+Only original traditional prayers with identifiable sources may be presented as original scripture. App-written meanings and explanations must remain separately labelled. Do not invent verses, silently shorten a work or invent an attribution. Shankaracharya and Adi Shankara are not separate authors for duplicate collection entries. Not every text popularly attributed to a saint has a secure historical attribution; disclose traditional attribution where appropriate.
+
+Completed collections in this working tree: Ganesha (13), Shiva (24 including Kalabhairava), Murugan (10, including Arunagirinathar, Pamban, traditionally attributed Shankara, Agastya and deva prayers). See the collection-specific content documents and checks. Ten supplied books are imported as native text, not PDFs. Book OCR and app-written meanings are not fully proofread editions.
+
+Added in the next collection: 25 identified original works / 260 reading units for Vishnu/Thirumal, Narasimha, Vamana, Krishna, Guruvayurappan, Varaha, Venkatesa, Rama, five Alvar works, Mahalakshmi, Durga, Saraswati, Kali, Bagalamukhi, Lalita, Annapurna, Meenakshi, Anjaneya, Dattatreya and Ayyappa. Kalabhairava is separately discoverable from the existing Shiva collection. This remains a finite catalogue, not the entire canon of all hymns, Siddhar works or the 4,000 Divya Prabandham verses. Continue additions only from identified original sources; do not label it “all mantras”. See devotional-content.md.
+
+Latest presentation preference: Tamil interface and meanings; the renewed user request explicitly asks for Tamil and Sanskrit in mantras, so the mantra reader has an optional Sanskrit-original display alongside Tamil readings. Gita and general interface preferences remain Tamil. Companion name: கடவுளிடம் கேளுங்கள். Use compassionate, respectful, grounded language; do not present generated replies as literal divine revelation or as original hymns.
+
+The user's Gita video and devotional conversation video were examined locally. Gita source spelling and typography were revised; the source audit does not establish that every explanatory paragraph is a perfect traditional commentary.

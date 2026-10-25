@@ -24,13 +24,13 @@ export default function Nayanmar() {
           </Pressable>
           <View style={st.heroText}>
             <Text style={st.kicker}>பெரிய புராணம் · சேக்கிழார்</Text>
-            <Text style={st.title}>அறுபத்து மூன்று நாயன்மார்</Text>
-            <Text style={st.sub}>எப்படி வாழ்ந்தார்கள் · எப்படி வழிபட்டார்கள் · என்ன ஒழுக்கம்</Text>
+            <Text style={st.title}>நாயன்மார் திருச்சரிதம்</Text>
+            <Text style={st.sub}>அறுபத்து மூவர் அருள்வாழ்வும் தொண்டுநெறியும்</Text>
           </View>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12 }}>
-          <Text style={st.h}>முழுக் கதைகள் · {ready.length} / 63</Text>
+          <Text style={st.h}>திருச்சரிதங்கள் · {ready.length} / 63</Text>
           {ready.map((x) => (
             <Pressable key={x.n} accessibilityRole="button" onPress={() => router.push(`/stories/${x.story}` as never)} style={({ pressed }) => [st.ready, pressed && { opacity: 0.88 }]}>
               <View style={st.num}>
@@ -44,7 +44,7 @@ export default function Nayanmar() {
             </Pressable>
           ))}
 
-          <Text style={[st.h, { marginTop: 10 }]}>அனைவரும்</Text>
+          <Text style={[st.h, { marginTop: 10 }]}>அறுபத்து மூவர் திருநாமங்கள்</Text>
           <View style={st.list}>
             {NAYANMARS.map((x, i) => (
               <Pressable
@@ -56,13 +56,13 @@ export default function Nayanmar() {
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={st.rt}>{x.ta}</Text>
                   {(open === x.n || x.story) && <Text style={st.rs}>{x.place ? `${x.place} · ` : ''}{x.theme}</Text>}
-                  {open === x.n && <Text style={st.soon}>முழுக் கதை விரைவில் சேர்க்கப்படும்.</Text>}
+                  {open === x.n && <Text style={st.soon}>திருச்சரித விரிவுரை சேர்க்கப்பட உள்ளது.</Text>}
                 </View>
                 {x.story ? <Ionicons name="play-circle-outline" size={22} color={C.gold} /> : <Ionicons name={open === x.n ? 'chevron-up' : 'chevron-down'} size={18} color={C.muted} />}
               </Pressable>
             ))}
           </View>
-          <Text style={st.note}>பெயர்கள், வரிசை: சேக்கிழாரின் பெரிய புராணம். கதைகள் Divine Life-இன் சொந்த மறுகூறல்; நிகழ்வுகள் மரபுப்படி.</Text>
+          <Text style={st.note}>சேக்கிழார் அருளிய பெரியபுராணத்தை அடிப்படையாகக் கொண்ட திருச்சரிதச் சுருக்கங்கள்.</Text>
         </View>
       </ScrollView>
     </View>

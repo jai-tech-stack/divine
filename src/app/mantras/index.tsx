@@ -33,7 +33,7 @@ export default function MantraHome() {
       if (group === 'favs') return p.mantraFavs.includes(m.id);
       if (group && m.deity !== group) return false;
       if (!t) return true;
-      return [m.name, m.about, MANTRAS_EN[m.id]?.name ?? '', groupOf(m.deity).ta, ...m.lines.map((l) => l.ta + l.en)].join(' ').toLowerCase().includes(t);
+      return [m.name, m.about, m.source ?? '', ...(m.aliases ?? []), MANTRAS_EN[m.id]?.name ?? '', groupOf(m.deity).ta, ...m.lines.map((l) => l.ta + l.en)].join(' ').toLowerCase().includes(t);
     });
   }, [q, group, p.mantraFavs]);
 
@@ -58,7 +58,7 @@ export default function MantraHome() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: insets.bottom + 30 }}>
         <View style={[st.search, { backgroundColor: pal.card, borderColor: pal.line }]}>
           <Ionicons name="search" size={18} color={pal.sub} />
-          <TextInput value={q} onChangeText={setQ} placeholder="மந்திரம், தெய்வம், வரி…" placeholderTextColor={pal.sub} style={[st.searchIn, { color: pal.ink }]} accessibilityLabel="தேடல்" />
+          <TextInput value={q} onChangeText={setQ} placeholder="பாடல், தெய்வம், அருளாசிரியர்…" placeholderTextColor={pal.sub} style={[st.searchIn, { color: pal.ink }]} accessibilityLabel="தேடல்" />
           {!!q && (
             <Pressable onPress={() => setQ('')} hitSlop={8} accessibilityLabel="அழி">
               <Ionicons name="close-circle" size={18} color={pal.sub} />
@@ -89,19 +89,19 @@ export default function MantraHome() {
 
             {/* deity grid */}
             <View style={st.secRow}>
-              <Text style={[st.secT, { color: pal.ink }]}>தெய்வங்கள்</Text>
-              <Text style={[st.secS, { color: pal.sub }]}>{MANTRAS.length} மந்திரங்கள்</Text>
+              <Text style={[st.secT, { color: pal.ink }]}>பாராயணத் தொகுப்புகள்</Text>
+              <Text style={[st.secS, { color: pal.sub }]}>{MANTRAS.length} பதிவுகள்</Text>
             </View>
             <View style={st.grid}>
               {MANTRA_GROUPS.map((d) => {
                 const n = MANTRAS.filter((m) => m.deity === d.id).length;
                 if (!n) return null;
                 return (
-                  <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${d.ta}, ${n} மந்திரங்கள்`} onPress={() => setGroup(d.id)} style={({ pressed }) => [st.tile, { width: tileW, height: tileW * 1.22 }, pressed && { transform: [{ scale: 0.98 }] }]}>
+                  <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${d.ta}, ${n} ${n === 1 ? 'பதிவு' : 'பதிவுகள்'}`} onPress={() => setGroup(d.id)} style={({ pressed }) => [st.tile, { width: tileW, height: tileW * 1.22 }, pressed && { transform: [{ scale: 0.98 }] }]}>
                     <Image source={d.image} style={FILL} resizeMode="cover" />
                     <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.88)']} locations={[0.45, 1]} style={StyleSheet.absoluteFill} />
                     <View style={st.tileText}>
-                      <Text style={st.tileName} numberOfLines={1}>
+                      <Text style={st.tileName} numberOfLines={2}>
                         {d.ta}
                       </Text>
                       <View style={st.tileCount}>
@@ -124,7 +124,7 @@ export default function MantraHome() {
                 <LinearGradient colors={['rgba(0,0,0,0.05)', 'rgba(20,8,0,0.85)']} style={StyleSheet.absoluteFill} />
                 <View style={st.heroText}>
                   <Text style={st.heroName}>{g.ta}</Text>
-                  <Text style={st.heroLine}>{results.length} மந்திரங்கள் & ஸ்தோத்திரங்கள்</Text>
+                  <Text style={st.heroLine}>{results.length} {results.length === 1 ? 'பதிவு' : 'பதிவுகள்'}</Text>
                 </View>
               </View>
             )}
@@ -143,6 +143,10 @@ export default function MantraHome() {
 function Card({ m, pal, fav, script, en }: { m: Mantra; pal: Palette; fav: boolean; script: 'ta' | 'sa' | 'en'; en: boolean }) {
   const d = groupOf(m.deity);
   const name = en && MANTRAS_EN[m.id] ? MANTRAS_EN[m.id].name : m.name;
+  const displayScript = m.originalLanguage === 'ta' && script === 'sa' ? 'ta' : script;
+  const countLabel = m.deity === 'alvar' ? `${m.lines.length} பாசுரங்கள்` : m.originalLanguage === 'ta'
+    ? `${m.lines.reduce((count, line) => count + line.ta.split('\n').length, 0)} அடிகள்`
+    : m.sections ? `${m.sections.reduce((a, x) => a + x.verses.length, 0)} சுலோகங்கள்` : `${m.lines.length} ${m.practice ? 'செய்யுள்கள்' : 'வரி'}`;
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push(`/mantras/${m.id}`)} style={({ pressed }) => [st.card, { backgroundColor: pal.card, borderColor: pal.line }, pressed && { opacity: 0.92 }]}>
       <Image source={d.image} style={st.thumb} resizeMode="cover" />
@@ -150,12 +154,12 @@ function Card({ m, pal, fav, script, en }: { m: Mantra; pal: Palette; fav: boole
         <Text style={[st.cardName, { color: pal.ink }]} numberOfLines={2}>
           {name}
         </Text>
-        <Text style={[st.cardLine, { color: pal.sub }, script === 'sa' && { fontFamily: F.deva }, script === 'en' && { fontFamily: undefined, fontStyle: 'italic' }]} numberOfLines={1}>
-          {m.lines[0][script]}
+        <Text style={[st.cardLine, { color: pal.sub }, displayScript === 'sa' && { fontFamily: F.deva }, displayScript === 'en' && { fontFamily: undefined, fontStyle: 'italic' }]} numberOfLines={1}>
+          {m.lines[0][displayScript]}
         </Text>
         <View style={st.meta}>
-          <Meta pal={pal} icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={m.kind === 'mantra' ? 'மந்திரம்' : 'ஸ்லோகம்'} />
-          <Meta pal={pal} icon="reorder-three" text={m.sections ? `${m.sections.reduce((a, x) => a + x.verses.length, 0)} ச்லோகம்` : `${m.lines.length} வரி`} />
+          <Meta pal={pal} icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={m.originalLanguage === 'ta' ? 'தமிழ்ப் பாடல்' : m.originalLanguage === 'hi' ? 'இந்தி ஆரத்தி' : m.kind === 'mantra' ? 'மந்திரம்' : 'ஸ்தோத்திரம்'} />
+          <Meta pal={pal} icon="reorder-three" text={countLabel} />
           <Meta pal={pal} icon="repeat" text={`${m.japa}`} />
         </View>
       </View>

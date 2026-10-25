@@ -1,16 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Easing, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-import { stories } from '@/content';
 import { deityForToday, SCENES } from '@/content/deities';
 import { usePrefs } from '@/lib/prefs';
 import { streak, useProgress, wicks } from '@/lib/progress';
 import { F } from '@/theme';
+import { getStory } from '@/content';
+import { getMantra } from '@/content/mantraLib';
+import { BOOKS } from '@/content/books';
 
 /**
  * Home — a window into a painted heaven. The art fills the screen; everything you can do sits on it as
@@ -84,11 +86,19 @@ export default function Home() {
   const last = p.gitaLast ?? { c: 2, v: 47 };
   const hour = forThisHour(ph, last);
   const deity = deityForToday(prefs.deity);
-  const story = stories[0];
+  const savedStory = p.storyLast && !p.storyLast.completed ? getStory(p.storyLast.id) : undefined;
+  const savedMantra = p.lastActivity?.kind === 'mantra' ? getMantra(p.lastActivity.ref) : undefined;
+  const savedBook = p.bookLast ? BOOKS.find(book => book.id === p.bookLast!.id) : undefined;
+  const resume = [
+    ...(p.gitaLast ? [{ title: `பகவத் கீதை ${p.gitaLast.c}.${p.gitaLast.v}`, href: `/gita/${p.gitaLast.c}/${p.gitaLast.v}` }] : []),
+    ...(savedStory ? [{ title: `${savedStory.title} · காட்சி ${p.storyLast!.scene + 1}`, href: `/stories/${savedStory.id}` }] : []),
+    ...(savedMantra ? [{ title: savedMantra.name, href: `/mantras/${savedMantra.id}` }] : []),
+    ...(savedBook ? [{ title: `${savedBook.title} · பக்கம் ${p.bookLast!.page}`, href: `/books/${savedBook.id}?page=${p.bookLast!.page}` }] : []),
+  ];
   const g = GREETING[ph];
-  const bg = deity.id === 'shiva' ? BG.shiva : deity.id === 'murugan' ? BG.murugan : ph === 'dusk' || ph === 'night' ? BG.shiva : BG.murugan;
+  const bg = deity.id === 'shiva' ? BG.shiva : deity.id === 'murugan' ? BG.murugan : deity.image;
 
-  const zoom = useRef(new Animated.Value(1)).current;
+  const [zoom] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const a = Animated.loop(
       Animated.sequence([
@@ -108,17 +118,17 @@ export default function Home() {
   ] as const;
 
   const small = [
-    { t: 'நாயன்மார்', s: '63 அடியார்கள்', icon: 'people-outline', href: '/nayanmar', img: require('../../assets/story/loka-kailasam.jpg') },
-    { t: 'கதைகள்', s: story.title, icon: 'sparkles-outline', href: `/stories/${story.id}`, img: require('../../assets/story/naimisha.jpg') },
-    { t: 'நூலகம்', s: 'யோகம் · சித்தர்கள்', icon: 'library-outline', href: '/library', img: require('../../assets/story/loka-cosmos.jpg') },
+    { t: 'நாயன்மார் திருச்சரிதம்', s: 'அறுபத்து மூவர் அருள்வாழ்வு', icon: 'people-outline', href: '/nayanmar', img: require('../../assets/story/loka-kailasam.jpg') },
+    { t: 'புராணச் சரிதங்கள்', s: 'புராணங்கள் உணர்த்தும் அறநெறி', icon: 'sparkles-outline', href: '/puranas', img: require('../../assets/story/naimisha.jpg') },
+    { t: 'ஞான நூல்கள்', s: 'வேதாந்தம் · யோகம் · சித்தர்நெறி', icon: 'library-outline', href: '/library', img: require('../../assets/story/loka-cosmos.jpg') },
   ] as const;
 
   const tabs = [
     { t: 'முகப்பு', icon: 'home', href: '', on: true },
     { t: 'கீதை', icon: 'book-outline', href: '/gita', on: false },
     { t: 'மந்திரம்', icon: 'musical-notes-outline', href: '/mantras', on: false },
-    { t: 'துணை', icon: 'chatbubble-ellipses-outline', href: '/companion', on: false },
-    { t: 'தெய்வம்', icon: 'person-outline', href: '/deity', on: false },
+    { t: 'கேளுங்கள்', icon: 'chatbubble-ellipses-outline', href: '/companion', on: false },
+    { t: 'தெய்வம்', icon: 'flower-outline', href: '/deity', on: false },
   ] as const;
 
   const tabH = 62 + insets.bottom;
@@ -130,8 +140,20 @@ export default function Home() {
         <LinearGradient colors={['rgba(10,4,2,0.55)', 'rgba(10,4,2,0)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 150 }} />
         <LinearGradient colors={['rgba(14,6,3,0)', 'rgba(14,6,3,0.72)', 'rgba(14,6,3,0.94)']} locations={[0, 0.5, 1]} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: height * 0.4 }} />
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: Math.max(height * 0.46, 330), paddingBottom: tabH + 28 }}>
-          <View style={{ alignItems: 'center', paddingHorizontal: 24 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: tabH + 28 }}>
+          <View style={st.topBar}>
+            <Lotus size={44} />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={st.brand}>Divine Life</Text>
+              <Text style={st.tag}>உங்கள் ஆன்மிகத் துணை</Text>
+            </View>
+            <Pressable accessibilityRole="button" accessibilityLabel="இஷ்ட தெய்வத்தைத் தேர்ந்தெடு" onPress={() => router.push('/deity')} style={st.profile}>
+              <Ionicons name="flower-outline" size={22} color={GOLD} />
+              <Text style={{ fontFamily: F.taSemi, fontSize: 9, lineHeight: 16, color: GOLD }}>தெய்வம்</Text>
+            </Pressable>
+          </View>
+          <View style={{ height: Math.max(height * 0.28, 180) }} />
+          <View style={st.welcome}>
             <Text style={st.greet}>{g.t}</Text>
             <Text style={st.greetSub}>{g.s}</Text>
             <View style={st.rule}>
@@ -155,7 +177,7 @@ export default function Home() {
 
           <View style={st.circles}>
             {circles.map((c) => (
-              <Pressable key={c.t} accessibilityRole="button" accessibilityLabel={c.t} onPress={() => router.push(c.href as never)} style={({ pressed }) => [{ alignItems: 'center', width: 82 }, pressed && { opacity: 0.8 }]}>
+              <Pressable key={c.t} accessibilityRole="button" accessibilityLabel={c.t} onPress={() => router.push(c.href as never)} style={({ pressed }) => [{ alignItems: 'center', flex: 1, minWidth: 0 }, pressed && { opacity: 0.8 }]}>
                 <View style={st.circle}>
                   <Ionicons name={c.icon} size={29} color={GOLD} />
                 </View>
@@ -167,12 +189,19 @@ export default function Home() {
           </View>
 
           <View style={{ paddingHorizontal: 18, gap: 12 }}>
+            {resume.length > 0 && <View style={st.resume}>
+              <Text style={st.smallT}>விட்ட இடத்திலிருந்து தொடருங்கள்</Text>
+              {resume.map(item => <Pressable key={item.href} accessibilityRole="button" onPress={() => router.push(item.href as never)} style={st.resumeRow}>
+                <Text style={[st.smallS, { flex: 1 }]}>{item.title}</Text><Ionicons name="arrow-forward" size={18} color={GOLD} />
+              </Pressable>)}
+              <Text style={st.smallS}>முன்னேற்றம் இந்தச் சாதனத்தில் சேமிக்கப்படுகிறது.</Text>
+            </View>}
             <Pressable accessibilityRole="button" onPress={() => router.push(hour.href as never)} style={({ pressed }) => [st.banner, pressed && { opacity: 0.9 }]}>
               <Image source={hour.img} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
               <LinearGradient colors={['rgba(20,8,3,0.15)', 'rgba(20,8,3,0.9)']} start={{ x: 0, y: 0 }} end={{ x: 0.62, y: 0 }} style={StyleSheet.absoluteFill} />
               <View style={{ flex: 1, paddingLeft: '34%', paddingRight: 44, justifyContent: 'center', gap: 2 }}>
                 <Text style={st.kicker}>{hour.kicker}</Text>
-                <Text style={st.bannerT} numberOfLines={2}>
+                <Text style={st.bannerT}>
                   {hour.title}
                 </Text>
                 <Text style={st.bannerS}>{hour.sub}</Text>
@@ -182,19 +211,17 @@ export default function Home() {
               </View>
             </Pressable>
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={{ gap: 12 }}>
               {small.map((x) => (
                 <Pressable key={x.href} accessibilityRole="button" accessibilityLabel={x.t} onPress={() => router.push(x.href as never)} style={({ pressed }) => [st.small, pressed && { opacity: 0.88 }]}>
                   <Image source={x.img} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%', opacity: 0.4 }]} resizeMode="cover" />
                   <LinearGradient colors={['rgba(20,8,3,0.35)', 'rgba(20,8,3,0.92)']} style={StyleSheet.absoluteFill} />
-                  <View style={st.smallIcon}>
-                    <Ionicons name={x.icon} size={20} color={GOLD} />
+                  <View style={st.smallIcon}><Ionicons name={x.icon} size={24} color={GOLD} /></View>
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <Text style={st.smallT}>{x.t}</Text>
+                    <Text style={st.smallS}>{x.s}</Text>
                   </View>
-                  <View style={{ flex: 1 }} />
-                  <Text style={st.smallT}>{x.t}</Text>
-                  <Text style={st.smallS} numberOfLines={1}>
-                    {x.s}
-                  </Text>
+                  <Ionicons name="chevron-forward" size={18} color={GOLD} />
                 </Pressable>
               ))}
             </View>
@@ -206,28 +233,17 @@ export default function Home() {
               <Ionicons name="swap-horizontal" size={15} color={CREAM_SOFT} />
             </Pressable>
 
-            <Text style={{ fontFamily: F.ta, fontSize: 11, lineHeight: 18, color: CREAM_SOFT, opacity: 0.8, textAlign: 'center' }}>
-              கதைகள் "பதினெண் புராணங்கள்" (அ.ச. ஞானசம்பந்தன், ஞா. மீரா) நூலின் அடிப்படையிலும், நாயன்மார் கதைகள் சேக்கிழாரின் பெரிய புராணத்தின் அடிப்படையிலும் சுருக்கமாக மறுகூறப்பட்டவை. ஓவியங்கள் AI உதவியுடன் உருவாக்கப்பட்டவை.
-            </Text>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/library/sources')} style={{ alignSelf: 'center', padding: 12 }}>
+              <Text style={{ fontFamily: F.ta, fontSize: 12, lineHeight: 21, color: CREAM_SOFT }}>மூலநூல் குறிப்புகள்</Text>
+            </Pressable>
           </View>
         </ScrollView>
-
-        <View style={[st.topBar, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
-          <Lotus size={44} />
-          <View style={{ flex: 1 }}>
-            <Text style={st.brand}>Divine Life</Text>
-            <Text style={st.tag}>உங்கள் ஆன்மிகத் துணை</Text>
-          </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="தெய்வத்தைத் தேர்ந்தெடு" onPress={() => router.push('/deity')} style={st.profile}>
-            <Ionicons name="person-outline" size={22} color={GOLD} />
-          </Pressable>
-        </View>
 
         <View style={[st.tabBar, { height: tabH, paddingBottom: insets.bottom }]}>
           {tabs.map((t) => (
             <Pressable key={t.t} accessibilityRole="button" accessibilityLabel={t.t} onPress={() => t.href && router.push(t.href as never)} style={st.tab}>
               <Ionicons name={t.icon} size={24} color={t.on ? GOLD : CREAM_SOFT} />
-              <Text style={{ fontFamily: F.taSemi, fontSize: 11, color: t.on ? GOLD : CREAM_SOFT }}>{t.t}</Text>
+              <Text style={{ fontFamily: F.taSemi, fontSize: 10.5, lineHeight: 18, textAlign: 'center', color: t.on ? GOLD : CREAM_SOFT }}>{t.t}</Text>
               {t.on && <View style={st.tabOn} />}
             </Pressable>
           ))}
@@ -238,10 +254,13 @@ export default function Home() {
 }
 
 const st = StyleSheet.create({
-  topBar: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20 },
-  brand: { fontFamily: F.num, fontSize: 30, color: GOLD, letterSpacing: 0.5 },
-  tag: { fontFamily: F.ta, fontSize: 12, color: CREAM, opacity: 0.9 },
-  profile: { width: 46, height: 46, borderRadius: 23, borderWidth: 1.2, borderColor: GLASS_LINE, backgroundColor: 'rgba(20,8,3,0.4)', alignItems: 'center', justifyContent: 'center' },
+  resume: { padding: 16, gap: 8, borderRadius: 18, borderWidth: 1, borderColor: GLASS_LINE, backgroundColor: 'rgba(14,6,3,0.9)' },
+  resumeRow: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, borderBottomWidth: 1, borderBottomColor: GLASS_LINE, paddingVertical: 8 },
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12 },
+  brand: { fontFamily: F.num, fontSize: 30, lineHeight: 38, color: GOLD, letterSpacing: 0.5 },
+  tag: { fontFamily: F.ta, fontSize: 12, lineHeight: 21, color: CREAM, opacity: 0.9 },
+  profile: { width: 54, height: 54, borderRadius: 20, borderWidth: 1.2, borderColor: GLASS_LINE, backgroundColor: 'rgba(20,8,3,0.4)', alignItems: 'center', justifyContent: 'center' },
+  welcome: { alignItems: 'center', marginHorizontal: 18, paddingHorizontal: 14, paddingVertical: 14, borderRadius: 20, backgroundColor: 'rgba(14,6,3,0.65)', borderWidth: 1, borderColor: GLASS_LINE },
   greet: { fontFamily: F.taBold, fontSize: 30, lineHeight: 46, color: CREAM, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 8 },
   greetSub: { fontFamily: F.ta, fontSize: 15, lineHeight: 24, color: CREAM_SOFT, textAlign: 'center' },
   rule: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10, width: '78%' },
@@ -255,15 +274,15 @@ const st = StyleSheet.create({
   circles: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 8, marginTop: 22, marginBottom: 22 },
   circle: { width: 66, height: 66, borderRadius: 33, borderWidth: 1.3, borderColor: GLASS_LINE, backgroundColor: 'rgba(40,18,6,0.5)', alignItems: 'center', justifyContent: 'center', shadowColor: GOLD, shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 0 } },
   circleT: { fontFamily: F.taSemi, fontSize: 13, lineHeight: 20, color: CREAM, marginTop: 7, textAlign: 'center' },
-  banner: { height: 112, borderRadius: 20, borderWidth: 1.2, borderColor: GLASS_LINE, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', backgroundColor: GLASS },
+  banner: { minHeight: 128, paddingVertical: 16, borderRadius: 20, borderWidth: 1.2, borderColor: GLASS_LINE, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', backgroundColor: GLASS },
   kicker: { fontFamily: F.taSemi, fontSize: 11.5, color: GOLD },
   bannerT: { fontFamily: F.taBold, fontSize: 17, lineHeight: 27, color: CREAM },
   bannerS: { fontFamily: F.ta, fontSize: 12.5, color: CREAM_SOFT },
   arrow: { position: 'absolute', right: 12, top: 0, bottom: 0, justifyContent: 'center' },
-  small: { flex: 1, height: 118, borderRadius: 18, borderWidth: 1.2, borderColor: GLASS_LINE, overflow: 'hidden', padding: 11, backgroundColor: GLASS },
-  smallIcon: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, borderColor: GLASS_LINE, backgroundColor: 'rgba(40,18,6,0.55)', alignItems: 'center', justifyContent: 'center' },
-  smallT: { fontFamily: F.taBold, fontSize: 14.5, color: CREAM },
-  smallS: { fontFamily: F.ta, fontSize: 11, color: CREAM_SOFT },
+  small: { minHeight: 108, flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 18, borderWidth: 1.2, borderColor: GLASS_LINE, overflow: 'hidden', padding: 16, backgroundColor: GLASS },
+  smallIcon: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: GLASS_LINE, backgroundColor: 'rgba(40,18,6,0.55)', alignItems: 'center', justifyContent: 'center' },
+  smallT: { fontFamily: F.taBold, fontSize: 17, lineHeight: 29, color: CREAM },
+  smallS: { fontFamily: F.ta, fontSize: 12, lineHeight: 22, color: CREAM_SOFT },
   deityLink: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'center', paddingVertical: 8 },
   tabBar: { position: 'absolute', left: 0, right: 0, bottom: 0, flexDirection: 'row', backgroundColor: 'rgba(14,6,3,0.94)', borderTopWidth: 1, borderTopColor: 'rgba(244,196,110,0.25)' },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingTop: 6 },
