@@ -35,8 +35,8 @@ export default function Dhyanam() {
   const [done, setDone] = useState(false);
   const [tambura, setTambura] = useState(false);
   const [vol, setVol] = useState(65);
-  const drone = useAudioPlayer(require('@/assets/audio/tambura.wav'));
-  const gong = useAudioPlayer(require('@/assets/audio/gong.wav'));
+  const drone = useAudioPlayer(require('@/assets/audio/tambura.m4a'));
+  const gong = useAudioPlayer(require('@/assets/audio/gong.m4a'));
   const [breath] = useState(() => new Animated.Value(0));
   const last = useRef(0);
 

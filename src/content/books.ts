@@ -1,3 +1,4 @@
+import { ART } from '@/content/artwork';
 import { createBookRepository, type LoadedBook } from '../lib/bookRepository';
 import { bookStorage } from '../lib/bookStorage';
 import type { ImageSourcePropType } from 'react-native';
@@ -6,16 +7,16 @@ export type Book = { id: string; title: string; category: string; originalFilena
 export type BookPage = { number: number; text: string; confidence: number | null; reviewed: boolean };
 export type BookText = { id: string; title: string; sourcePages: number; method: string; reviewStatus: string; pages: BookPage[] };
 const covers: Record<string, ImageSourcePropType> = {
-  'eighteen-puranas': require('../../assets/optimized/books/eighteen-puranas.jpg'),
-  'nayanmar-stories': require('../../assets/optimized/books/nayanmar-stories.jpg'),
-  periyapuranam: require('../../assets/optimized/books/periyapuranam.jpg'),
-  'bogar-7000-3': require('../../assets/optimized/books/bogar-7000-3.jpg'),
-  'bogar-7000-2': require('../../assets/optimized/books/bogar-7000-2.jpg'),
-  'siddhar-yoga': require('../../assets/optimized/books/siddhar-yoga.jpg'),
-  'sudarsana-satakam': require('../../assets/optimized/books/sudarsana-satakam.jpg'),
-  'chakravarthi-thirumagan': require('../../assets/optimized/books/chakravarthi-thirumagan.jpg'),
-  'bhagavata-puranam': require('../../assets/optimized/books/bhagavata-puranam.jpg'),
-  kakapujandar: require('../../assets/optimized/books/kakapujandar.jpg'),
+  'eighteen-puranas': ART['books/eighteen-puranas'],
+  'nayanmar-stories': ART['books/nayanmar-stories'],
+  periyapuranam: ART['books/periyapuranam'],
+  'bogar-7000-3': ART['books/bogar-7000-3'],
+  'bogar-7000-2': ART['books/bogar-7000-2'],
+  'siddhar-yoga': ART['books/siddhar-yoga'],
+  'sudarsana-satakam': ART['books/sudarsana-satakam'],
+  'chakravarthi-thirumagan': ART['books/chakravarthi-thirumagan'],
+  'bhagavata-puranam': ART['books/bhagavata-puranam'],
+  kakapujandar: ART['books/kakapujandar'],
 };
 export const BOOKS: Book[] = (require('./books.json') as Omit<Book, 'cover'>[]).map(book => ({ ...book, cover: covers[book.id] }));
 export const BOOK_CATEGORIES = ['அனைத்தும்', ...new Set(BOOKS.map(book => book.category))];

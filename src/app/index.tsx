@@ -1,3 +1,4 @@
+import { ART } from '@/content/artwork';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -28,7 +29,7 @@ const GLASS_LINE = 'rgba(244,196,110,0.42)';
 const CREAM = '#FFF1D6';
 const CREAM_SOFT = '#E9D2AA';
 
-const BG = { shiva: require('../../assets/optimized/home/shiva.jpg'), murugan: require('../../assets/optimized/home/murugan.jpg') };
+const BG = { shiva: ART['home/shiva'], murugan: ART['home/murugan'] };
 
 function phaseNow(): Phase {
   const h = new Date().getHours();
@@ -48,13 +49,13 @@ const GREETING: Record<Phase, { t: string; s: string }> = {
 function forThisHour(ph: Phase, last: { c: number; v: number }) {
   switch (ph) {
     case 'dawn':
-      return { kicker: 'நாளின் தொடக்கத்துக்கு', title: 'காயத்ரி மந்திரம்', sub: 'மூன்று முறை, மெதுவாக', href: '/mantras/universal-gayatri', img: require('../../assets/optimized/story/loka-brahmaloka.jpg') };
+      return { kicker: 'நாளின் தொடக்கத்துக்கு', title: 'காயத்ரி மந்திரம்', sub: 'மூன்று முறை, மெதுவாக', href: '/mantras/universal-gayatri', img: ART['story/loka-brahmaloka'] };
     case 'noon':
       return { kicker: 'நடுப்பகலுக்கு', title: `கீதை ${last.c}.${last.v} — தொடருங்கள்`, sub: 'ஒரு சுலோகம் போதும்', href: `/gita/${last.c}/${last.v}`, img: SCENES.krishnaArjuna };
     case 'dusk':
-      return { kicker: 'விளக்கேற்றும் வேளைக்கு', title: 'கர்ப்பூர கௌரம்', sub: 'ஆரத்தி மந்திரம்', href: '/mantras/shiva-karpuragauram', img: require('../../assets/optimized/story/loka-kailasam.jpg') };
+      return { kicker: 'விளக்கேற்றும் வேளைக்கு', title: 'கர்ப்பூர கௌரம்', sub: 'ஆரத்தி மந்திரம்', href: '/mantras/shiva-karpuragauram', img: ART['story/loka-kailasam'] };
     default:
-      return { kicker: 'இன்றிரவு அமைதிக்கு', title: 'சாந்தாகாரம்', sub: 'மனம் அடங்க ஒரு மந்திரம்', href: '/mantras/vishnu-shantakaram', img: require('../../assets/optimized/story/loka-cosmos.jpg') };
+      return { kicker: 'இன்றிரவு அமைதிக்கு', title: 'சாந்தாகாரம்', sub: 'மனம் அடங்க ஒரு மந்திரம்', href: '/mantras/vishnu-shantakaram', img: ART['story/loka-cosmos'] };
   }
 }
 
@@ -108,9 +109,9 @@ export default function Home() {
   ] as const;
 
   const small = [
-    { t: 'நாயன்மார் திருச்சரிதம்', s: 'அறுபத்து மூவர் அருள்வாழ்வு', icon: 'people-outline', href: '/nayanmar', img: require('../../assets/optimized/story/loka-kailasam.jpg') },
-    { t: 'புராணச் சரிதங்கள்', s: 'புராணங்கள் உணர்த்தும் அறநெறி', icon: 'sparkles-outline', href: '/puranas', img: require('../../assets/optimized/story/naimisha.jpg') },
-    { t: 'ஞான நூல்கள்', s: 'வேதாந்தம் · யோகம் · சித்தர்நெறி', icon: 'library-outline', href: '/library', img: require('../../assets/optimized/story/loka-cosmos.jpg') },
+    { t: 'நாயன்மார் திருச்சரிதம்', s: 'அறுபத்து மூவர் அருள்வாழ்வு', icon: 'people-outline', href: '/nayanmar', img: ART['story/loka-kailasam'] },
+    { t: 'புராணச் சரிதங்கள்', s: 'புராணங்கள் உணர்த்தும் அறநெறி', icon: 'sparkles-outline', href: '/puranas', img: ART['story/naimisha'] },
+    { t: 'ஞான நூல்கள்', s: 'வேதாந்தம் · யோகம் · சித்தர்நெறி', icon: 'library-outline', href: '/library', img: ART['story/loka-cosmos'] },
   ] as const;
 
   const tabs = [

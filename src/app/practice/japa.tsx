@@ -47,8 +47,8 @@ export default function Japa() {
   const [tempo] = useState(2.4);
   const [vol, setVol] = useState(65);
   const [done, setDone] = useState(false);
-  const bell = useAudioPlayer(require('@/assets/audio/bell.wav'));
-  const gong = useAudioPlayer(require('@/assets/audio/gong.wav'));
+  const bell = useAudioPlayer(require('@/assets/audio/bell.m4a'));
+  const gong = useAudioPlayer(require('@/assets/audio/gong.m4a'));
   const [ripple] = useState(() => new Animated.Value(0));
   const [pop] = useState(() => new Animated.Value(1));
   const [burst] = useState(() => new Animated.Value(0));
