@@ -4,14 +4,13 @@ import { speakTamil, stopTamilSpeech } from '@/lib/tamilSpeech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Animated, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { usePalette } from '@/components/reader/ReaderKit';
 import { deityForToday } from '@/content/deities';
 import { askGuide, type ChatMsg, opening, refLabel, topicFrom } from '@/lib/companion';
 import { progress, useProgress } from '@/lib/progress';
-import { VoiceOrb, type OrbState } from '@/components/VoiceOrb';
 import { sttAvailable, useListen } from '@/lib/stt';
 import { F } from '@/theme';
 
@@ -89,12 +88,12 @@ export default function Companion() {
   };
 
   const ear = useListen('ta-IN', (t) => send(t));
-  const orbState: OrbState = ear.listening ? 'listening' : busy ? 'thinking' : talking ? 'speaking' : 'idle';
   const tapMic = () => {
     if (ear.listening) return ear.stop();
     if (talking) {
       stopTamilSpeech();
       setTalking(false);
+      return;
     }
     ear.start();
   };
@@ -217,7 +216,7 @@ export default function Companion() {
       </View>
       {voice && (
         <View style={[StyleSheet.absoluteFill, { backgroundColor: '#120804', alignItems: 'center', paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}>
-          <DeityImage source={deity.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%', opacity: 0.22 }]} resizeMode="cover" blurRadius={6} />
+          <LinearGradient colors={['#35180C', '#120804']} style={StyleSheet.absoluteFill} />
           <View style={st.topRow}>
             <Pressable accessibilityRole="button" accessibilityLabel="மூடு" onPress={closeVoice} hitSlop={8} style={st.round}>
               <Ionicons name="close" size={22} color="#FFF6E2" />
@@ -228,19 +227,25 @@ export default function Companion() {
             </View>
             <View style={{ width: 40 }} />
           </View>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, gap: 18 }}>
-            <VoiceOrb state={orbState} size={230} />
+          <View style={st.voiceBody}>
+            <View style={st.portrait}>
+              <Image source={deity.image} style={{ width: '100%', height: '100%' }} resizeMode="contain" accessibilityLabel={deity.ta} />
+            </View>
+            <Text style={st.deityName}>{deity.ta}</Text>
             <Text style={{ fontFamily: F.taBold, fontSize: 18, color: '#FFE7B0', textAlign: 'center' }}>
               {ear.listening ? 'கேட்கிறேன்…' : busy ? 'நூல்களில் தேடுகிறேன்…' : talking ? 'சொல்கிறேன்…' : sttAvailable ? 'மைக்கைத் தட்டிப் பேசுங்கள்' : 'இந்தக் கருவியில் குரல் பதிவு இல்லை'}
             </Text>
-            <Text style={{ fontFamily: F.ta, fontSize: 15, lineHeight: 25, color: '#F3E1BC', textAlign: 'center', minHeight: 80 }} numberOfLines={5}>
-              {ear.listening ? ear.partial : ear.error ?? lastReply}
-            </Text>
+            <ScrollView style={st.voiceTranscript} contentContainerStyle={{ padding: 12 }} accessibilityLiveRegion="polite">
+              <Text style={{ fontFamily: F.ta, fontSize: 15, lineHeight: 25, color: '#F3E1BC', textAlign: 'center' }}>
+                {ear.listening ? ear.partial : ear.error ?? lastReply}
+              </Text>
+            </ScrollView>
             {!sttAvailable && <Text style={{ fontFamily: F.ta, fontSize: 12, color: '#C9B28A', textAlign: 'center' }}>இந்தப் பதிப்பில் குரல் பதிவு கிடைக்கவில்லை. உங்கள் கேள்வியை எழுதிக் கேளுங்கள்.</Text>}
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={ear.listening ? 'நிறுத்து' : 'பேசு'} onPress={tapMic} disabled={!sttAvailable || busy} style={[st.bigMic, ear.listening && { backgroundColor: '#D8402E' }, (!sttAvailable || busy) && { opacity: 0.4 }]}>
-            <Ionicons name={ear.listening ? 'stop' : 'mic'} size={34} color="#fff" />
+          <Pressable accessibilityRole="button" accessibilityLabel={ear.listening || talking ? 'நிறுத்து' : 'பேசு'} onPress={tapMic} disabled={busy || (!sttAvailable && !talking)} style={[st.bigMic, (ear.listening || talking) && { backgroundColor: '#D8402E' }, (busy || (!sttAvailable && !talking)) && { opacity: 0.4 }]}>
+            <Ionicons name={ear.listening || talking ? 'stop' : 'mic'} size={30} color="#fff" />
           </Pressable>
+          <Text style={st.voiceButtonLabel}>{ear.listening || talking ? 'நிறுத்து' : busy ? 'காத்திருங்கள்…' : 'பேசுங்கள்'}</Text>
           <Text style={{ fontFamily: F.ta, fontSize: 11, color: '#C9B28A', marginTop: 12, paddingHorizontal: 30, textAlign: 'center' }}>நூல்களின் அடிப்படையிலான ஆன்மிக வழிகாட்டல்.</Text>
         </View>
       )}
@@ -249,6 +254,11 @@ export default function Companion() {
 }
 
 const st = StyleSheet.create({
+  voiceBody: { flex: 1, alignSelf: 'stretch', alignItems: 'center', paddingHorizontal: 24, paddingTop: 14, paddingBottom: 12, gap: 10 },
+  portrait: { flex: 1, minHeight: 100, maxHeight: 420, width: '100%', overflow: 'hidden', borderRadius: 24, borderWidth: 1, borderColor: '#79552D', backgroundColor: '#1D1009' },
+  deityName: { fontFamily: F.taBold, fontSize: 20, color: '#FFE7B0', textAlign: 'center' },
+  voiceTranscript: { flexGrow: 0, maxHeight: 140, minHeight: 52, alignSelf: 'stretch', borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.25)' },
+  voiceButtonLabel: { fontFamily: F.taSemi, fontSize: 14, color: '#FFE7B0', marginTop: 8 },
   head: { height: 290, overflow: 'hidden', alignItems: 'center' },
   topRow: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12 },
   round: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
