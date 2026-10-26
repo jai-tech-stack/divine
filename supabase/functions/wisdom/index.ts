@@ -64,10 +64,10 @@ async function gemini(q: string, c: Ctx) {
   const key = Deno.env.get('GEMINI_API_KEY');
   if (!key) throw new Error('no key');
   const model = Deno.env.get('GEMINI_MODEL') ?? 'gemini-flash-latest';
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     signal: AbortSignal.timeout(12000),
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM }] },
       contents: [{ role: 'user', parts: [{ text: userPrompt(q, c) }] }],
