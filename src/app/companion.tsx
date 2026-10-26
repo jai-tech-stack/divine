@@ -75,7 +75,7 @@ export default function Companion() {
     setBusy(true);
     setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50);
     progress.talked();
-    const r = await askGuide(t, topic, next, en);
+    const r = await askGuide(t, topic, next, en, deity.id);
     setMsgs((m) => [...m, { id: nid(), who: 'guide', ...r }]);
     if (r.followUp) setSuggest([r.followUp]);
     setBusy(false);
