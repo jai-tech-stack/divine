@@ -21,3 +21,16 @@ Book readers download published documents from Supabase on first open, validate 
 The deployed `wisdom` function uses existing server-side provider keys, Tamil-only replies and provider request timeouts. `ai-usage.sql` provides atomic daily provider quotas; only service_role can reserve requests. Existing GEMINI_DAILY_LIMIT/GROQ_DAILY_LIMIT values are respected (default 20, capped at 1,000). Configured model names were updated after legacy models returned 404; a live Tamil response was verified from Groq. The app derives the wisdom endpoint from the public Supabase URL unless explicitly overridden. Device Tamil speech is supported; the reference-video voice has not been cloned or connected to a voice-generation provider.
 
 Recovery requires a maintenance window: rename the current public schema aside, restore the archived schema name, restore original ACLs from the recorded inventory and the old auth trigger, then reload PostgREST. Do not run an unreviewed DROP/RESET or assume restoring schema names alone restores revoked permissions.
+# Tamil voice
+
+`tamil-voice` generates original Tamil speech with Gemini 3.8 Flash-Lite TTS
+and the preset Kore voice, directed toward calm, warm delivery. It does not
+replicate the reference recording or upload that recording. Only the text being
+read is sent to Gemini; `store: false` disables stored interaction state.
+The endpoint shares the atomic Gemini daily request budget with `wisdom`.
+It accepts at most 2,000 characters and returns private, non-cacheable WAV audio.
+The mobile client deletes temporary playback files, cancels pending speech on
+stop, and falls back to the installed Tamil voice if the service is unavailable.
+Deploy with `npx supabase functions deploy tamil-voice --project-ref oojhfezpvpdfrjjdsjod --use-api`.
+No additional provider key or native dependency is required.
+
