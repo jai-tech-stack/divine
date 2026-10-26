@@ -29,12 +29,14 @@ function BookReaderContent({ id, startPage }: { id: string; startPage?: string }
   useEffect(() => {
     let active = true;
     if (id) Promise.all([loadBook(id), AsyncStorage.getItem(key(id)).catch(() => null)])
-      .then(([data, saved]) => {
+      .then(([result, saved]) => {
+        const data = result.book;
         if (!active) return;
         const requested = Number(startPage);
         const number = Number.isInteger(requested) && requested >= 1 && requested <= data.pages.length ? requested : Number(saved);
         const last = Number.isInteger(number) && number >= 1 && number <= data.pages.length ? number : 1;
         setPage(last); setJump(String(last)); setBook(data);
+        setMessage(result.offline ? 'இந்த நூல் இணையமின்றியும் வாசிக்கச் சேமிக்கப்பட்டுள்ளது.' : 'சேமிக்க முடியவில்லை. இந்த முறை இணையத்துடன் வாசிக்கலாம்.');
       }).catch(() => { if (active) setFailed(true); });
     return () => { active = false; };
   }, [id, startPage, attempt]);
@@ -59,7 +61,7 @@ function BookReaderContent({ id, startPage }: { id: string; startPage?: string }
   const current = book?.pages[page - 1];
   return <View style={[st.fill, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
     <View style={st.header}><IconButton label="நூல்களுக்குத் திரும்பு" onPress={() => router.back()}>{Icons.back()}</IconButton><Text style={st.title} numberOfLines={2}>{meta?.title ?? 'நூல் கிடைக்கவில்லை'}</Text></View>
-    {!meta ? <Text style={st.note}>வேறு நூலைத் தேர்ந்தெடுக்கவும்.</Text> : failed ? <View style={st.center}><Text style={st.note}>உரையை ஏற்ற முடியவில்லை.</Text><Pressable accessibilityRole="button" onPress={() => { setFailed(false); setMessage(''); setAttempt(value => value + 1); }} style={st.button}><Text style={st.buttonText}>மீண்டும் முயல்</Text></Pressable></View> : !book ? <View style={st.center}><ActivityIndicator color={C.gold} /><Text style={st.note}>நூல் திறக்கிறது…</Text></View> : !book.pages.length ? <Text style={st.note}>இந்நூலின் உரை மாற்றப்பணி நடைபெறுகிறது.</Text> : <>
+    {!meta ? <Text style={st.note}>வேறு நூலைத் தேர்ந்தெடுக்கவும்.</Text> : failed ? <View style={st.center}><Text style={st.note}>நூலை ஏற்ற முடியவில்லை. முதல் முறை திறக்க இணைய இணைப்பு தேவை.</Text><Pressable accessibilityRole="button" onPress={() => { setFailed(false); setMessage(''); setAttempt(value => value + 1); }} style={st.button}><Text style={st.buttonText}>மீண்டும் முயல்</Text></Pressable></View> : !book ? <View style={st.center}><ActivityIndicator color={C.gold} /><Text style={st.note}>நூல் திறக்கிறது… முதல் பதிவிறக்கச் சிறிது நேரம் ஆகலாம்.</Text></View> : !book.pages.length ? <Text style={st.note}>இந்நூலின் உரை மாற்றப்பணி நடைபெறுகிறது.</Text> : <>
       <View style={st.controls}>
         <Text style={st.pageLabel}>மூலப் பக்கம் {page} / {book.sourcePages}</Text>
         <IconButton label="எழுத்தளவைக் குறை" onPress={() => setSize(value => Math.max(14, value - 2))}><Text style={st.fontButton}>அ−</Text></IconButton>

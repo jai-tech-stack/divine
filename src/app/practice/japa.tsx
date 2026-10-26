@@ -1,9 +1,10 @@
+import { DeityImage } from '@/components/DeityImage';
 import { useAudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
@@ -107,7 +108,7 @@ export default function Japa() {
 
   return (
     <View style={[st.fill, { paddingTop: insets.top, paddingBottom: insets.bottom + 16 }]}>
-      <Image key={deity.id} source={deity.image} resizeMode="cover" style={st.bg} />
+      <DeityImage key={deity.id} source={deity.image} resizeMode="cover" style={st.bg} />
       <LinearGradient colors={['rgba(7,11,20,0.35)', 'rgba(7,11,20,0.75)', C.night]} locations={[0, 0.45, 0.72]} style={StyleSheet.absoluteFill} />
       <Stars />
       <View style={st.header}>

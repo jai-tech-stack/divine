@@ -1,6 +1,10 @@
-import { CormorantGaramond_500Medium, CormorantGaramond_600SemiBold } from '@expo-google-fonts/cormorant-garamond';
-import { NotoSerifDevanagari_600SemiBold } from '@expo-google-fonts/noto-serif-devanagari';
-import { NotoSerifTamil_400Regular, NotoSerifTamil_600SemiBold, NotoSerifTamil_700Bold, useFonts } from '@expo-google-fonts/noto-serif-tamil';
+import { CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond/500Medium';
+import { CormorantGaramond_600SemiBold } from '@expo-google-fonts/cormorant-garamond/600SemiBold';
+import { NotoSerifDevanagari_600SemiBold } from '@expo-google-fonts/noto-serif-devanagari/600SemiBold';
+import { NotoSerifTamil_400Regular } from '@expo-google-fonts/noto-serif-tamil/400Regular';
+import { NotoSerifTamil_600SemiBold } from '@expo-google-fonts/noto-serif-tamil/600SemiBold';
+import { NotoSerifTamil_700Bold } from '@expo-google-fonts/noto-serif-tamil/700Bold';
+import { useFonts } from 'expo-font';
 import { setAudioModeAsync } from 'expo-audio';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';

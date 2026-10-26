@@ -29,7 +29,7 @@ for (const book of books) {
 assert.equal(pageCount, 3214);
 const loaders = fs.readFileSync(new URL('src/content/books.ts', root), 'utf8');
 assert.doesNotMatch(loaders, /require\([^)]*\.pdf/);
-for (const book of books) assert.ok(loaders.includes(`bookTexts/${book.id}.json`));
+assert.doesNotMatch(loaders, /import\([^)]*bookTexts|require\([^)]*bookTexts/, 'Do not bundle large book texts');
 const pkg = read('package.json');
 assert.ok(!pkg.dependencies['expo-sharing'], 'Removed PDF feature must not leave its dependency');
 console.log(`Text-book checks passed: 10 books, ${pageCount} source pages, ${textPages} pages with extracted text, ${characters.toLocaleString()} characters; no PDF assets.`);

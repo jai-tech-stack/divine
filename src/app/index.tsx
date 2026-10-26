@@ -1,8 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Animated, Easing, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React from 'react';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
@@ -27,9 +27,8 @@ const GLASS = 'rgba(24,10,4,0.46)';
 const GLASS_LINE = 'rgba(244,196,110,0.42)';
 const CREAM = '#FFF1D6';
 const CREAM_SOFT = '#E9D2AA';
-const native = Platform.OS !== 'web';
 
-const BG = { shiva: require('../../assets/home/shiva.jpg'), murugan: require('../../assets/home/murugan.jpg') };
+const BG = { shiva: require('../../assets/optimized/home/shiva.jpg'), murugan: require('../../assets/optimized/home/murugan.jpg') };
 
 function phaseNow(): Phase {
   const h = new Date().getHours();
@@ -49,13 +48,13 @@ const GREETING: Record<Phase, { t: string; s: string }> = {
 function forThisHour(ph: Phase, last: { c: number; v: number }) {
   switch (ph) {
     case 'dawn':
-      return { kicker: 'நாளின் தொடக்கத்துக்கு', title: 'காயத்ரி மந்திரம்', sub: 'மூன்று முறை, மெதுவாக', href: '/mantras/universal-gayatri', img: require('../../assets/story/loka-brahmaloka.jpg') };
+      return { kicker: 'நாளின் தொடக்கத்துக்கு', title: 'காயத்ரி மந்திரம்', sub: 'மூன்று முறை, மெதுவாக', href: '/mantras/universal-gayatri', img: require('../../assets/optimized/story/loka-brahmaloka.jpg') };
     case 'noon':
       return { kicker: 'நடுப்பகலுக்கு', title: `கீதை ${last.c}.${last.v} — தொடருங்கள்`, sub: 'ஒரு சுலோகம் போதும்', href: `/gita/${last.c}/${last.v}`, img: SCENES.krishnaArjuna };
     case 'dusk':
-      return { kicker: 'விளக்கேற்றும் வேளைக்கு', title: 'கர்ப்பூர கௌரம்', sub: 'ஆரத்தி மந்திரம்', href: '/mantras/shiva-karpuragauram', img: require('../../assets/story/loka-kailasam.jpg') };
+      return { kicker: 'விளக்கேற்றும் வேளைக்கு', title: 'கர்ப்பூர கௌரம்', sub: 'ஆரத்தி மந்திரம்', href: '/mantras/shiva-karpuragauram', img: require('../../assets/optimized/story/loka-kailasam.jpg') };
     default:
-      return { kicker: 'இன்றிரவு அமைதிக்கு', title: 'சாந்தாகாரம்', sub: 'மனம் அடங்க ஒரு மந்திரம்', href: '/mantras/vishnu-shantakaram', img: require('../../assets/story/loka-cosmos.jpg') };
+      return { kicker: 'இன்றிரவு அமைதிக்கு', title: 'சாந்தாகாரம்', sub: 'மனம் அடங்க ஒரு மந்திரம்', href: '/mantras/vishnu-shantakaram', img: require('../../assets/optimized/story/loka-cosmos.jpg') };
   }
 }
 
@@ -97,18 +96,9 @@ export default function Home() {
   ];
   const g = GREETING[ph];
   const bg = deity.id === 'shiva' ? BG.shiva : deity.id === 'murugan' ? BG.murugan : deity.image;
+  const backgroundAsset = Image.resolveAssetSource(bg);
+  const backgroundHeight = W * (backgroundAsset?.height || 3) / (backgroundAsset?.width || 2);
 
-  const [zoom] = useState(() => new Animated.Value(1));
-  useEffect(() => {
-    const a = Animated.loop(
-      Animated.sequence([
-        Animated.timing(zoom, { toValue: 1.06, duration: 16000, easing: Easing.inOut(Easing.quad), useNativeDriver: native }),
-        Animated.timing(zoom, { toValue: 1, duration: 16000, easing: Easing.inOut(Easing.quad), useNativeDriver: native }),
-      ]),
-    );
-    a.start();
-    return () => a.stop();
-  }, [zoom]);
 
   const circles = [
     { t: 'அமைதி', icon: 'flower-outline', href: '/practice/dhyanam' },
@@ -118,9 +108,9 @@ export default function Home() {
   ] as const;
 
   const small = [
-    { t: 'நாயன்மார் திருச்சரிதம்', s: 'அறுபத்து மூவர் அருள்வாழ்வு', icon: 'people-outline', href: '/nayanmar', img: require('../../assets/story/loka-kailasam.jpg') },
-    { t: 'புராணச் சரிதங்கள்', s: 'புராணங்கள் உணர்த்தும் அறநெறி', icon: 'sparkles-outline', href: '/puranas', img: require('../../assets/story/naimisha.jpg') },
-    { t: 'ஞான நூல்கள்', s: 'வேதாந்தம் · யோகம் · சித்தர்நெறி', icon: 'library-outline', href: '/library', img: require('../../assets/story/loka-cosmos.jpg') },
+    { t: 'நாயன்மார் திருச்சரிதம்', s: 'அறுபத்து மூவர் அருள்வாழ்வு', icon: 'people-outline', href: '/nayanmar', img: require('../../assets/optimized/story/loka-kailasam.jpg') },
+    { t: 'புராணச் சரிதங்கள்', s: 'புராணங்கள் உணர்த்தும் அறநெறி', icon: 'sparkles-outline', href: '/puranas', img: require('../../assets/optimized/story/naimisha.jpg') },
+    { t: 'ஞான நூல்கள்', s: 'வேதாந்தம் · யோகம் · சித்தர்நெறி', icon: 'library-outline', href: '/library', img: require('../../assets/optimized/story/loka-cosmos.jpg') },
   ] as const;
 
   const tabs = [
@@ -136,7 +126,7 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: '#0A0503', alignItems: 'center' }}>
       <View style={{ width: W, flex: 1, overflow: 'hidden', backgroundColor: '#1A0A04' }}>
-        <Animated.Image source={bg} resizeMode="cover" style={[StyleSheet.absoluteFill, { width: W, height: '100%', transform: [{ scale: zoom }] }]} />
+        <Image source={bg} resizeMode="contain" style={{ position: 'absolute', top: insets.top + 75, left: 0, width: W, height: backgroundHeight }} />
         <LinearGradient colors={['rgba(10,4,2,0.55)', 'rgba(10,4,2,0)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 150 }} />
         <LinearGradient colors={['rgba(14,6,3,0)', 'rgba(14,6,3,0.72)', 'rgba(14,6,3,0.94)']} locations={[0, 0.5, 1]} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: height * 0.4 }} />
 

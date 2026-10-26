@@ -1,6 +1,6 @@
 {
   "name": "divine-life",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/cormorant-garamond": "^0.4.1",
@@ -14,6 +14,7 @@
     "expo-audio": "~58.0.9",
     "expo-constants": "~58.0.12",
     "expo-device": "~58.0.5",
+    "expo-file-system": "~58.0.11",
     "expo-font": "~58.0.9",
     "expo-glass-effect": "~58.0.4",
     "expo-haptics": "~58.0.7",
@@ -53,5 +54,16 @@
     "web": "expo start --web",
     "lint": "expo lint"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "autolinking": {
+      "android": {
+        "exclude": [
+          "expo-image",
+          "expo-gl",
+          "expo-device"
+        ]
+      }
+    }
+  }
 }

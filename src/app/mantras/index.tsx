@@ -1,8 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
+import { DeityImage } from '@/components/DeityImage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LangBar, type Palette, ReaderSettings, usePalette } from '@/components/reader/ReaderKit';
@@ -70,7 +71,7 @@ export default function MantraHome() {
           <>
             {/* today's mantra */}
             <Pressable accessibilityRole="button" onPress={() => router.push(`/mantras/${today.id}`)} style={st.hero}>
-              <Image source={groupOf(today.deity).image} style={FILL} resizeMode="cover" />
+              <DeityImage source={groupOf(today.deity).image} style={FILL} resizeMode="cover" />
               <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.55)', 'rgba(20,8,0,0.92)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
               <View style={st.heroBadge}>
                 <Ionicons name="sunny" size={13} color="#2B1D0E" />
@@ -98,7 +99,7 @@ export default function MantraHome() {
                 if (!n) return null;
                 return (
                   <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${d.ta}, ${n} ${n === 1 ? 'பதிவு' : 'பதிவுகள்'}`} onPress={() => setGroup(d.id)} style={({ pressed }) => [st.tile, { width: tileW, height: tileW * 1.22 }, pressed && { transform: [{ scale: 0.98 }] }]}>
-                    <Image source={d.image} style={FILL} resizeMode="cover" />
+                    <DeityImage source={d.image} style={FILL} resizeMode="cover" />
                     <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.88)']} locations={[0.45, 1]} style={StyleSheet.absoluteFill} />
                     <View style={st.tileText}>
                       <Text style={st.tileName} numberOfLines={2}>
@@ -120,7 +121,7 @@ export default function MantraHome() {
           <>
             {g && (
               <View style={st.banner}>
-                <Image source={g.image} style={FILL} resizeMode="cover" />
+                <DeityImage source={g.image} style={FILL} resizeMode="cover" />
                 <LinearGradient colors={['rgba(0,0,0,0.05)', 'rgba(20,8,0,0.85)']} style={StyleSheet.absoluteFill} />
                 <View style={st.heroText}>
                   <Text style={st.heroName}>{g.ta}</Text>
@@ -149,7 +150,7 @@ function Card({ m, pal, fav, script, en }: { m: Mantra; pal: Palette; fav: boole
     : m.sections ? `${m.sections.reduce((a, x) => a + x.verses.length, 0)} சுலோகங்கள்` : `${m.lines.length} ${m.practice ? 'செய்யுள்கள்' : 'வரி'}`;
   return (
     <Pressable accessibilityRole="button" onPress={() => router.push(`/mantras/${m.id}`)} style={({ pressed }) => [st.card, { backgroundColor: pal.card, borderColor: pal.line }, pressed && { opacity: 0.92 }]}>
-      <Image source={d.image} style={st.thumb} resizeMode="cover" />
+      <DeityImage source={d.image} style={st.thumb} resizeMode="cover" />
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={[st.cardName, { color: pal.ink }]} numberOfLines={2}>
           {name}

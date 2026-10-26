@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -19,7 +19,7 @@ export default function Books() {
     <View style={st.heading}><IconButton label="ஞான நூல்களுக்குத் திரும்பு" onPress={() => router.back()}>{Icons.back()}</IconButton><View style={{ flex: 1 }}><Text style={st.title}>மூல நூல்கள்</Text><Text style={st.sub}>{BOOKS.length} நூல்கள் · உரையாக வாசிக்க</Text></View></View>
     <FlatList data={filtered} keyExtractor={book => book.id} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 28, gap: 12 }}
       ListHeaderComponent={<View style={{ gap: 12, marginBottom: 4 }}>
-        <Text style={st.intro}>நூலைத் தேர்ந்தெடுத்து இங்கேயே படியுங்கள். எழுத்தளவை மாற்றலாம்; உரையைத் தேர்ந்தெடுத்து நகலெடுக்கலாம்.</Text>
+        <Text style={st.intro}>முதல் முறை நூலைத் திறக்கும்போது பதிவிறக்கப்படும். சேமித்த பிறகு இணையமின்றிப் படிக்கலாம். எழுத்தளவை மாற்றலாம்; உரையைத் தேர்ந்தெடுத்து நகலெடுக்கலாம்.</Text>
         <View style={st.search}><Ionicons name="search-outline" size={20} color={C.goldLight} /><TextInput accessibilityLabel="நூல் தேடு" placeholder="நூல் அல்லது ஆசிரியர் தேடு" placeholderTextColor={C.muted} value={query} onChangeText={setQuery} style={st.input} /></View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>{BOOK_CATEGORIES.map(item => <Pressable key={item} accessibilityRole="button" accessibilityState={{ selected: item === category }} onPress={() => setCategory(item)} style={[st.chip, item === category && st.selected]}><Text style={[st.chipText, item === category && { color: C.night }]}>{item}</Text></Pressable>)}</ScrollView>
         <Text style={st.hint}>ஸ்கேனிலிருந்து மாற்றப்பட்ட உரைகளில் எழுத்துப் பிழைகள் இருக்கலாம். மூலப் பக்க எண்கள் வாசிப்பில் காட்டப்படும்.</Text>

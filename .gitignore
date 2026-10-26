@@ -51,3 +51,4 @@ example
 *.aab
 credentials.json
 /artifacts/
+/supabase/.temp/

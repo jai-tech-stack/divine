@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -17,7 +17,7 @@ export default function Nayanmar() {
     <View style={{ flex: 1, backgroundColor: C.night }}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}>
         <View style={st.hero}>
-          <Image source={require('@/assets/story/loka-kailasam.jpg')} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
+          <Image source={require('@/assets/optimized/story/loka-kailasam.jpg')} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
           <LinearGradient colors={['rgba(7,11,20,0.5)', 'transparent', C.night]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
           <Pressable accessibilityRole="button" accessibilityLabel="பின்செல்" onPress={() => router.back()} style={[st.back, { top: insets.top + 6 }]}>
             <Ionicons name="arrow-back" size={22} color={C.cream} />

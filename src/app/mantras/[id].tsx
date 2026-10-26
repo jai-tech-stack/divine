@@ -1,10 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
+import { DeityImage } from '@/components/DeityImage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AudioBar, bodyFont, LangBar, ReaderSettings, usePalette, verseFont } from '@/components/reader/ReaderKit';
@@ -138,7 +139,7 @@ export default function MantraReader() {
       <ScrollView ref={scrollRef} key={m.id} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 170 }}>
         {/* picture header */}
         <View style={st.hero}>
-          <Image source={g.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
+          <DeityImage source={g.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
           <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.6)', 'rgba(20,8,0,0.94)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
           <View style={st.heroText}>
             <Text style={st.heroName}>{useEn ? enInfo.name : m.name}</Text>

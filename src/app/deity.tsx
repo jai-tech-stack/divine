@@ -1,7 +1,8 @@
+import { DeityImage } from '@/components/DeityImage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { IconButton, Icons } from '@/components/ui';
@@ -42,7 +43,7 @@ export default function DeityPicker() {
           accessibilityState={{ checked: prefs.deity === 'weekday' }}
           onPress={() => pick('weekday')}
           style={[st.weekday, prefs.deity === 'weekday' && st.on]}>
-          <Image source={today.image} style={st.weekdayImg} resizeMode="cover" />
+          <DeityImage source={today.image} style={st.weekdayImg} resizeMode="cover" />
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={st.name}>வாரநாள் வழிபாடு</Text>
             <Text style={st.sub}>
@@ -63,7 +64,7 @@ export default function DeityPicker() {
 function Card({ d, width, fontScale, on, onPress }: { d: Deity; width: number; fontScale: number; on: boolean; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} accessibilityLabel={d.ta} onPress={onPress} style={({ pressed }) => [st.card, { width, height: Math.max(240 * fontScale, width * 1.5) }, on && st.on, pressed && { opacity: 0.9 }]}>
-      <Image source={d.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
+      <DeityImage source={d.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
       <LinearGradient colors={['transparent', 'rgba(7,11,20,0.2)', 'rgba(7,11,20,0.92)']} style={StyleSheet.absoluteFill} />
       <View style={st.cardText}>
         <Text style={st.name}>{d.ta}</Text>

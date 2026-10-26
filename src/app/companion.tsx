@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
+import { DeityImage } from '@/components/DeityImage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Animated, Easing, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { usePalette } from '@/components/reader/ReaderKit';
@@ -128,7 +129,7 @@ export default function Companion() {
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: pal.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       {/* header: deity orb */}
       <View style={[st.head, { paddingTop: insets.top + 4 }]}>
-        <Image source={deity.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" blurRadius={2} />
+        <DeityImage source={deity.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" blurRadius={2} />
         <LinearGradient colors={['rgba(20,8,0,0.35)', 'rgba(20,8,0,0.25)', pal.bg]} locations={[0, 0.6, 1]} style={StyleSheet.absoluteFill} />
         <View style={st.topRow}>
           <Pressable accessibilityRole="button" accessibilityLabel="பின்செல்" onPress={() => router.back()} hitSlop={8} style={st.round}>
@@ -143,7 +144,7 @@ export default function Companion() {
         <View style={st.orbWrap}>
           <Animated.View style={[st.halo, { opacity: glow, transform: [{ scale }] }]} />
           <Animated.View style={[st.orb, { transform: [{ scale }] }]}>
-            <Image source={deity.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+            <DeityImage source={deity.image} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           </Animated.View>
         </View>
         <Text style={st.status}>{busy ? (en ? 'Reflecting with the texts…' : 'உங்கள் கேள்வியுடன் அருள்நூல்களைச் சிந்திக்கிறேன்…') : en ? 'Share what is on your mind' : 'மனதில் இருப்பதைப் பகிருங்கள் · அன்புடன் வழிகாட்டல்'}</Text>
@@ -216,7 +217,7 @@ export default function Companion() {
       </View>
       {voice && (
         <View style={[StyleSheet.absoluteFill, { backgroundColor: '#120804', alignItems: 'center', paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}>
-          <Image source={deity.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%', opacity: 0.22 }]} resizeMode="cover" blurRadius={6} />
+          <DeityImage source={deity.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%', opacity: 0.22 }]} resizeMode="cover" blurRadius={6} />
           <View style={st.topRow}>
             <Pressable accessibilityRole="button" accessibilityLabel="மூடு" onPress={closeVoice} hitSlop={8} style={st.round}>
               <Ionicons name="close" size={22} color="#FFF6E2" />
