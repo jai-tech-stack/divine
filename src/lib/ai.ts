@@ -31,7 +31,8 @@ const PREPARED: Record<string, WisdomReply> = {
   },
 };
 
-const ENDPOINT = process.env.EXPO_PUBLIC_WISDOM_URL;
+const ENDPOINT = process.env.EXPO_PUBLIC_WISDOM_URL ?? (process.env.EXPO_PUBLIC_SUPABASE_URL
+  ? `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/wisdom` : undefined);
 const ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 export function aiConfigured() {

@@ -1,6 +1,6 @@
 import { DeityImage } from '@/components/DeityImage';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Speech from 'expo-speech';
+import { speakTamil, stopTamilSpeech } from '@/lib/tamilSpeech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -62,7 +62,7 @@ export default function Companion() {
     return () => loop.stop();
   }, [busy, pulse]);
 
-  useEffect(() => () => void Speech.stop(), []);
+  useEffect(() => () => void stopTamilSpeech(), []);
 
   const send = async (text: string) => {
     const t = text.trim();
@@ -82,9 +82,9 @@ export default function Companion() {
     setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 80);
     if (voiceRef.current) {
       setLastReply(r.text);
-      Speech.stop();
+      stopTamilSpeech();
       setTalking(true);
-      Speech.speak(r.text, { language: 'ta-IN', rate: 0.93, onDone: () => setTalking(false), onStopped: () => setTalking(false), onError: () => setTalking(false) });
+      void speakTamil(r.text, { language: 'ta-IN', rate: 0.93, onDone: () => setTalking(false), onStopped: () => setTalking(false), onError: () => setTalking(false) });
     }
   };
 
@@ -93,13 +93,13 @@ export default function Companion() {
   const tapMic = () => {
     if (ear.listening) return ear.stop();
     if (talking) {
-      Speech.stop();
+      stopTamilSpeech();
       setTalking(false);
     }
     ear.start();
   };
   const closeVoice = () => {
-    Speech.stop();
+    stopTamilSpeech();
     setTalking(false);
     ear.stop();
     setVoice(false);
@@ -107,13 +107,13 @@ export default function Companion() {
 
   const speak = (m: ChatMsg) => {
     if (speaking === m.id) {
-      Speech.stop();
+      stopTamilSpeech();
       setSpeaking(null);
       return;
     }
-    Speech.stop();
+    stopTamilSpeech();
     setSpeaking(m.id);
-    Speech.speak(m.text, { language: 'ta-IN', rate: 0.95, onDone: () => setSpeaking(null), onStopped: () => setSpeaking(null), onError: () => setSpeaking(null) });
+    void speakTamil(m.text, { language: 'ta-IN', rate: 0.95, onDone: () => setSpeaking(null), onStopped: () => setSpeaking(null), onError: () => setSpeaking(null) });
   };
 
   const openRef = (ref: ChatMsg['ref']) => {

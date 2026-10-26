@@ -3,6 +3,9 @@ const { withGradleProperties, withAppBuildGradle } = require('expo/config-plugin
 function applyAbiSplits(contents) {
   const block = `// divine-life-abi-splits:start
 android {
+    androidResources {
+        localeFilters += ['ta', 'en']
+    }
     splits {
         abi {
             enable true

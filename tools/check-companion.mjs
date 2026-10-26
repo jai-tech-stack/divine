@@ -72,12 +72,16 @@ assert.equal((await guide.askGuide('வணக்கம்', null, [], false)).fo
 // Exercise the server module with Deno and network stubbed: all providers share the new tone.
 let handler;
 let request;
+let quotaAllowed = true;
+let modelRequests = 0;
 const server = ts.transpileModule(fs.readFileSync(path.join(root, 'supabase/functions/wisdom/index.ts'), 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 new Function('Deno', 'fetch', server)(
-  { env: { get: key => key === 'GEMINI_API_KEY' ? 'test-key' : undefined }, serve: fn => { handler = fn; } },
+  { env: { get: key => ({ GEMINI_API_KEY: 'test-key', SUPABASE_URL: 'https://example.invalid', SUPABASE_SERVICE_ROLE_KEY: 'test-server-key' })[key] }, serve: fn => { handler = fn; } },
   async (_url, options) => {
+    if (_url.endsWith('/rpc/reserve_provider_request')) return Response.json(quotaAllowed);
+    modelRequests++;
     request = JSON.parse(options.body);
     return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify({ text: 'அன்புடன் பேசலாம்.' }) }] } }] });
   },
@@ -88,4 +92,9 @@ const response = await handler(new Request('https://example.invalid', {
 assert.equal((await response.json()).text, 'அன்புடன் பேசலாம்.');
 assert.match(request.systemInstruction.parts[0].text, /அக்கறையுடனும் கனிவுடனும்/);
 assert.match(request.systemInstruction.parts[0].text, /தெய்வமாகப் பேசும் உறுதிகளையும்/);
+quotaAllowed = false;
+const limited = await handler(new Request('https://example.invalid', { method: 'POST', body: JSON.stringify({ question: 'வணக்கம்', context: {} }) }));
+assert.equal(limited.status, 503);
+assert.equal(modelRequests, 1, 'Daily quota must prevent another provider request');
+assert.equal((await handler(new Request('https://example.invalid', { method: 'GET' }))).status, 405);
 console.log('Companion checks passed: caring offline replies, preserved scripture references, short mantra responses, and online tone instructions.');
