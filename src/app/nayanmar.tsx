@@ -7,13 +7,15 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NAYANMARS } from '@/content/nayanmars';
+import { getStory } from '@/content';
 import { C, F } from '@/theme';
 
 /** The sixty-three, in the order of Sekkizhar's Periya Puranam. Ready stories open as cinematic tales. */
 export default function Nayanmar() {
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState<number | null>(null);
-  const ready = NAYANMARS.filter((x) => x.story);
+  const ready = NAYANMARS.filter((x) => x.story && getStory(x.story)?.sourceReviewed);
+  const isReady = (id?: string) => !!id && !!getStory(id)?.sourceReviewed;
   return (
     <View style={{ flex: 1, backgroundColor: C.night }}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}>
@@ -51,19 +53,19 @@ export default function Nayanmar() {
               <Pressable
                 key={x.n}
                 accessibilityRole="button"
-                onPress={() => (x.story ? router.push(`/stories/${x.story}` as never) : setOpen(open === x.n ? null : x.n))}
+                onPress={() => (isReady(x.story) ? router.push(`/stories/${x.story}` as never) : setOpen(open === x.n ? null : x.n))}
                 style={[st.row, i > 0 && { borderTopWidth: 1, borderTopColor: 'rgba(227,184,101,0.14)' }]}>
                 <Text style={st.rn}>{x.n}</Text>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={st.rt}>{x.ta}</Text>
-                  {(open === x.n || x.story) && <Text style={st.rs}>{x.place ? `${x.place} · ` : ''}{x.theme}</Text>}
-                  {open === x.n && <Text style={st.soon}>திருச்சரித விரிவுரை சேர்க்கப்பட உள்ளது.</Text>}
+                  {isReady(x.story) && <Text style={st.rs}>{x.place ? `${x.place} · ` : ''}{x.theme}</Text>}
+                  {open === x.n && !isReady(x.story) && <Text style={st.soon}>இந்தத் திருச்சரிதத்தை மூலத்துடன் ஒப்பிட்டு விரிவாக எழுதும் பணி நிலுவையில் உள்ளது. முழுக் கதை என்று சரிபார்க்காமல் காட்டமாட்டோம்.</Text>}
                 </View>
-                {x.story ? <Ionicons name="play-circle-outline" size={22} color={C.gold} /> : <Ionicons name={open === x.n ? 'chevron-up' : 'chevron-down'} size={18} color={C.muted} />}
+                {isReady(x.story) ? <Ionicons name="play-circle-outline" size={22} color={C.gold} /> : <Ionicons name={open === x.n ? 'chevron-up' : 'chevron-down'} size={18} color={C.muted} />}
               </Pressable>
             ))}
           </View>
-          <Text style={st.note}>சேக்கிழார் அருளிய பெரியபுராணத்தை அடிப்படையாகக் கொண்ட திருச்சரிதச் சுருக்கங்கள்.</Text>
+          <Text style={st.note}>63 நாயன்மார் திருநாமங்களிலிருந்து, பக்க ஆதாரத்துடன் ஒப்பிட்ட ஒரு காட்சிக் கதை மட்டும் இப்போது தயாராக உள்ளது. மீதிக் கதைகள் மூலத்துடன் சரிபார்க்கும் வரை முழுக் கதைகளாகக் காட்டப்படவில்லை.</Text>
         </View>
       </ScrollView>
     </View>
@@ -88,6 +90,6 @@ const st = StyleSheet.create({
   rn: { width: 28, fontFamily: F.num, fontSize: 17, color: C.gold },
   rt: { fontFamily: F.taSemi, fontSize: 15, color: C.cream },
   rs: { fontFamily: F.ta, fontSize: 12.5, lineHeight: 20, color: C.muted },
-  soon: { fontFamily: F.taSemi, fontSize: 12, color: C.goldLight },
+  soon: { fontFamily: F.ta, fontSize: 12, lineHeight: 22, color: C.goldLight },
   note: { fontFamily: F.ta, fontSize: 11, lineHeight: 18, color: 'rgba(201,187,155,0.75)' },
 });

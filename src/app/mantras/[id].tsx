@@ -60,7 +60,11 @@ export default function MantraReader() {
   const idx = MANTRAS.findIndex((x) => x.id === m.id);
   const prevM = idx > 0 ? MANTRAS[idx - 1] : null;
   const nextM = idx < MANTRAS.length - 1 ? MANTRAS[idx + 1] : null;
-  const lineText = (l: { ta: string; sa: string; en: string }, s: 'ta' | 'sa' | 'en') => (s === 'ta' ? l.ta : s === 'sa' ? l.sa : l.en);
+  // Tamil transliteration uses superscript digits as scholarly pronunciation marks.
+  // Strip them in the reading, speech and copied text so the screen reader and TTS
+  // do not treat those marks as spoken numbers.
+  const tamilReading = (text: string) => text.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, '');
+  const lineText = (l: { ta: string; sa: string; en: string }, s: 'ta' | 'sa' | 'en') => (s === 'ta' ? tamilReading(l.ta) : s === 'sa' ? l.sa : l.en);
   /** every verse in reading order; long stotrams carry their part */
   const verses: { ta: string; sa: string; en: string; mean?: string; sec?: number; n: number }[] = m.sections
     ? m.sections.flatMap((sec, si) => sec.verses.map((v, k) => ({ ...v, sec: si, n: k + 1 })))
@@ -69,7 +73,7 @@ export default function MantraReader() {
 
   const runRound = () => {
     handle.current = chantAlong(
-      verses.map((l) => l.ta),
+      verses.map((l) => tamilReading(l.ta)),
       {
         onLine: setHi,
         onDone: () => {
@@ -146,14 +150,14 @@ export default function MantraReader() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
               <HeroTag icon="person-outline" text={g.ta} />
               <HeroTag icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={formLabel} />
-              <HeroTag icon="repeat" text={m.practice ? 'பாராயணம் · 1 முறை' : `ஜபம் ${m.japa}`} />
+              <HeroTag icon="repeat" text={m.practice ? 'பாராயணம் · 1 முறை' : `விருப்ப எண்ணிக்கை · ${m.japa}`} />
             </View>
           </View>
         </View>
         <Text style={[st.about, { color: pal.sub }, useEn ? { fontSize: 14.5 } : { fontFamily: F.ta }]}>{useEn ? enInfo.about : m.about}</Text>
         <View style={[st.when, { backgroundColor: pal.chip }]}>
           <Ionicons name="time-outline" size={14} color={pal.accent} />
-          <Text style={{ fontFamily: F.ta, fontSize: 12.5, color: pal.ink, flex: 1 }}>{m.when}</Text>
+          <Text style={{ fontFamily: F.ta, fontSize: 12.5, color: pal.ink, flex: 1 }}>வழிபாட்டு வழக்கங்கள்: {m.when}. இது கட்டாய விதி அல்ல; உங்களுக்கு ஏற்ற நேரத்தில் சொல்லலாம்.</Text>
         </View>
 
         {m.practice && (
@@ -172,6 +176,13 @@ export default function MantraReader() {
         )}
         {m.originalLanguage === 'ta' && prefs.script === 'sa' && (
           <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.sub }]}>இது தமிழில் இயற்றப்பட்ட பாடல்; தமிழ்மூலம் காட்டப்படுகிறது.</Text>
+        )}
+
+        {!m.source && !m.references?.length && (
+          <View accessibilityRole="alert" style={{ padding: 14, gap: 5, borderRadius: 12, borderWidth: 1, borderColor: pal.line, backgroundColor: pal.chip }}>
+            <Text style={{ fontFamily: F.taSemi, fontSize: 13, color: pal.accent }}>மூல ஒப்பீடு நிலுவையில்</Text>
+            <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.ink }]}>இங்கு காட்டப்படும் பாடப்பதிப்பு, இயற்றுநர், மூலநூல் இன்னும் உறுதிப்படுத்தப்படவில்லை. இதைச் சரிபார்க்கப்பட்ட மூல மந்திரமாகக் கருத வேண்டாம்.</Text>
+          </View>
         )}
 
         {m.sections && (
@@ -224,7 +235,12 @@ export default function MantraReader() {
           <Ionicons name="chevron-forward" size={18} color={pal.accent} />
         </Pressable>
 
-        <Text style={[st.fine, { color: pal.sub }]}>{m.source ? `${m.source} ` : 'மூலம்: பாரம்பரிய சம்ஸ்கிருதம். பொருள்: Divine Life. '}பாரம்பரியப் பயன்கள் நம்பிக்கை சார்ந்தவை; உறுதியளிக்கப்படுபவை அல்ல.</Text>
+        <Text style={[st.fine, { color: pal.sub }]}>
+          {m.source
+            ? ''
+            : 'இந்தப் பாடலின் மூலநூல், இயற்றுநர் மற்றும் இங்கு காட்டப்படும் பாடப்பதிப்பு இன்னும் சரிபார்க்கப்படவில்லை. இதை உறுதிப்படுத்தப்பட்ட மூலப்பாடலாகக் கருத வேண்டாம். '}
+          பாரம்பரியப் பயன்கள் நம்பிக்கை சார்ந்தவை; உறுதியளிக்கப்படுபவை அல்ல.
+        </Text>
         {!!m.references?.length && (
           <View style={{ gap: 4 }}>
             <Text accessibilityRole="header" style={[st.practiceHeading, { color: pal.accent }]}>மூல ஆதாரங்கள்</Text>

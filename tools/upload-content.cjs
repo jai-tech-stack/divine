@@ -1,4 +1,6 @@
 // Admin-only content importer. Credentials stay in the CLI/this process, never in the app.
+/* global __dirname */
+const { Buffer } = require('node:buffer');
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -52,13 +54,21 @@ async function main() {
     if (!response.ok) throw Error(`Upload failed: ${batch[0].kind}/${batch[0].id}, HTTP ${response.status}`);
     console.log(`Uploaded ${batch.length} documents: ${batch[0].kind}/${batch[0].id}`);
   }
-  fs.writeFileSync(path.join(root, '.env.local'), `EXPO_PUBLIC_SUPABASE_URL=${origin}\nEXPO_PUBLIC_SUPABASE_ANON_KEY=${anon}\n`);
+  const envPath = path.join(root, '.env.local');
+  let envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+  for (const [name, value] of Object.entries({ EXPO_PUBLIC_SUPABASE_URL: origin, EXPO_PUBLIC_SUPABASE_ANON_KEY: anon })) {
+    const pattern = new RegExp(`^${name}=.*$`, 'm');
+    envText = pattern.test(envText) ? envText.replace(pattern, () => `${name}=${value}`) : `${envText.trimEnd()}\n${name}=${value}\n`;
+  }
+  fs.writeFileSync(envPath, envText);
   const response = await fetch(`${origin}/rest/v1/content_documents?select=kind,id,sha256`, { headers: { apikey: anon, Authorization: `Bearer ${anon}` } });
   if (!response.ok) throw Error(`Public read failed: ${response.status}`);
   const published = await response.json();
-  if (published.length !== rows.length || rows.some(row => !published.some(p => p.kind === row.kind && p.id === row.id && p.sha256 === row.sha256))) throw Error('Published manifest mismatch');
+  const managedKinds = new Set(rows.map(row => row.kind));
+  const managed = published.filter(row => managedKinds.has(row.kind));
+  if (managed.length !== rows.length || rows.some(row => !managed.some(p => p.kind === row.kind && p.id === row.id && p.sha256 === row.sha256))) throw Error('Published manifest mismatch');
   const denied = await fetch(`${origin}/rest/v1/content_documents`, { method: 'POST', headers: { apikey: anon, Authorization: `Bearer ${anon}`, 'Content-Type': 'application/json' }, body: JSON.stringify(rows[0]) });
   if (denied.ok || ![401,403].includes(denied.status)) throw Error(`Unexpected anonymous write result: ${denied.status}`);
-  console.log(`Verified ${published.length} published documents; anonymous writes denied. Public app configuration saved privately.`);
+  console.log(`Verified ${managed.length} managed documents; other published content retained; anonymous writes denied. Public app configuration saved privately.`);
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });

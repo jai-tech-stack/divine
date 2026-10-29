@@ -23,7 +23,7 @@ function load(file) {
   const module = { exports: {} };
   cache.set(file, module);
   const code = ts.transpileModule(fs.readFileSync(file, 'utf8'), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
   }).outputText;
   new Function('require', 'module', 'exports', code)(name => {
     if (name === '@/lib/ai') return ai;
@@ -37,6 +37,9 @@ function load(file) {
 }
 const guide = load(path.join(root, 'src/lib/companion.ts'));
 const gita = load(path.join(root, 'src/content/gita/index.ts'));
+const lastShivaChant = { lastActivity: { kind: 'mantra', ref: 'shiva-shadakshara-stotram', at: 1 }, gitaLast: null };
+assert.equal(guide.topicFrom(lastShivaChant, 'vishnu'), null, 'Do not show a Shiva stotra under another deity');
+assert.deepEqual(guide.topicFrom(lastShivaChant, 'shiva'), { kind: 'mantra', id: 'shiva-shadakshara-stotram' });
 assert.match(guide.opening(null, false).text, /அன்புடன்/);
 assert.equal(guide.opening(null, true).text, guide.opening(null, false).text, 'Legacy English preference must not change the interface language');
 for (const q of ['மனம் கவலையாக இருக்கிறது', 'பயமாக இருக்கிறது', 'தனிமை வலிக்கிறது', 'தோல்வி அடைந்தேன்', 'கோபமாக இருக்கிறது']) {

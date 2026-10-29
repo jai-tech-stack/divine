@@ -26,7 +26,13 @@ export default function Learn() {
     };
   }, [step]);
 
-  if (!story) return null;
+  if (!story) return (
+    <View style={[st.fill, { paddingTop: insets.top, paddingHorizontal: 24, justifyContent: 'center', gap: 14 }]}>
+      <Text style={[st.hTitle, { textAlign: 'center' }]}>இந்தச் சரிதத்தின் பாடமும் பொருளும் இன்னும் சரிபார்க்கப்படவில்லை</Text>
+      <Text style={[st.hSub, { textAlign: 'center' }]}>மூலத்துடன் ஒப்பிடாத விளக்கத்தையோ பாடத்தையோ முழுமையானது என்று காட்டமாட்டோம்.</Text>
+      <GoldButton label="தயாரான திருச்சரிதத்திற்குச் செல்லுங்கள்" icon={Icons.arrow(C.ink)} onPress={() => router.replace('/nayanmar')} />
+    </View>
+  );
   const last = step === STEPS.length - 1;
 
   return (
@@ -132,6 +138,7 @@ function VerseStep({ story }: StepProps) {
 }
 
 function MeaningStep({ story }: StepProps) {
+  const takeaway = story.wisdom.find((item) => item.heading === 'நமக்கான பாடம்')?.body ?? story.verse.note;
   return (
     <View style={{ gap: 16 }}>
       <Badge text="Divine Life உரை" tone="muted" />
@@ -146,7 +153,7 @@ function MeaningStep({ story }: StepProps) {
       <Text style={st.sectionH}>முழுப் பொருள்</Text>
       <T style={{ fontSize: 17, lineHeight: 31 }}>{story.verse.meaning}</T>
       <Text style={st.sectionH}>சரிதம் உணர்த்தும் நெறி</Text>
-      <T>பிருதுவின் சினம் &quot;பூமியைப் பிளப்பேன்&quot; என்ற மயக்கத்துக்குக் கொண்டு சென்றது — அதுவே சுலோகத்தின் முதல் படி. பூமி பேசியபோது அவன் நின்றான்; நினைவும் பகுத்தறிவும் திரும்பின; அழிவு தவிர்க்கப்பட்டது.</T>
+      <T>{takeaway}</T>
     </View>
   );
 }
@@ -177,11 +184,12 @@ function Stagger({ i, children }: { i: number; children: React.ReactNode }) {
 
 function YouStep({ story }: StepProps) {
   const [pick, setPick] = useState<number | null>(null);
+  const takeaway = story.wisdom.find((item) => item.heading === 'நமக்கான பாடம்')?.body ?? story.verse.note;
   const replies = [
-    'அது மிகவும் இயல்பானது — பிருதுவும் முதலில் வில்லைத்தான் எடுத்தான். அடுத்த முறை, பேசும் முன் ஒரு மூச்சு இடைவெளி.',
-    'விலகிச் செல்வது சில நேரம் புத்திசாலித்தனம். பின்பு திரும்பி வந்து "கேட்பது" தான் அடுத்த படி.',
-    'அதுவே கதையின் திருப்புமுனை. அந்தக் கணத்தில் உதவியது எது என்று கவனியுங்கள் — அதைப் பழக்கமாக்கலாம்.',
-    'பரவாயில்லை. அடுத்த முறை சினம் வரும் போது, உடலில் அது எங்கே உணரப்படுகிறது என்பதை மட்டும் கவனியுங்கள்.',
+    `உங்கள் பதிலைப் பகிர்ந்ததற்கு நன்றி. ${takeaway}`,
+    `உங்கள் எண்ணத்தை மதிக்கிறோம். ${takeaway}`,
+    `இந்தக் கோணமும் சிந்திக்கத்தக்கது. ${takeaway}`,
+    `ஒவ்வொருவரின் அனுபவமும் வேறுபடும். ${takeaway}`,
   ];
   return (
     <View style={{ gap: 16 }}>
@@ -256,7 +264,6 @@ function AskStep({ story }: StepProps) {
             <View style={st.aBubble}>
               <T>{m.a.text}</T>
               {!!m.a.followUp && <T style={{ color: C.goldLight, marginTop: 8 }}>{m.a.followUp}</T>}
-              <Text style={st.srcTag}>{m.a.source === 'offline' ? 'தயாரிக்கப்பட்ட விளக்கம்' : 'நூல்களின் அடிப்படையிலான விளக்கம்'}</Text>
             </View>
           </View>
         </Reveal>

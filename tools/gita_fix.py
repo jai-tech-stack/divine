@@ -1,6 +1,6 @@
 """Second pass over verses.json: pull merged speaker labels out of the text, restore the
 line break at the half-verse danda, and renumber chapter 13 so Arjuna's opening question
-is 13.0 and the rest follow the standard 700-verse numbering."""
+is 13.0 and the rest follow this selected edition's numbering."""
 import json, re, sys
 from indic_transliteration import sanscript
 p = sys.argv[1]

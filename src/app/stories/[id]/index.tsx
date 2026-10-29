@@ -2,7 +2,7 @@ import { createAudioPlayer } from 'expo-audio';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CinematicScene } from '@/components/cinema/CinematicScene';
@@ -28,8 +28,11 @@ export default function StoryPlayer() {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(false);
   const [voiceNote, setVoiceNote] = useState(false);
+  const [showSource, setShowSource] = useState(false);
+  const [failedClip, setFailedClip] = useState<string | null>(null);
   const [fade] = useState(() => new Animated.Value(1));
   const busy = useRef(false);
+  const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
 
   useEffect(() => {
     if (story && phase !== 'intro') void progress.storyPosition(story.id, si, li, phase === 'ended');
@@ -41,11 +44,15 @@ export default function StoryPlayer() {
   }, []);
 
   const scene = story?.scenes[si];
+  const sceneKey = story && scene ? `${story.id}/${scene.id}` : '';
+  const clip = useMemo(() => failedClip === sceneKey ? undefined : scene?.audio ? { uri: scene.audio } : story && scene ? sceneClip(story.id, scene.id) : undefined, [failedClip, sceneKey, scene, story]);
   const sceneMs = useMemo(() => (scene ? scene.lines.reduce((a, l) => a + estimateMs(l), 900) : 0), [scene]);
 
   const goScene = useCallback(
     (n: number) => {
       if (!story || busy.current) return;
+      stopNarration();
+      try { playerRef.current?.pause(); } catch {}
       if (n >= story.scenes.length) {
         stopNarration();
         setPhase('ended');
@@ -63,38 +70,44 @@ export default function StoryPlayer() {
 
   const next = useCallback(() => {
     if (!scene) return;
-    if (li < scene.lines.length - 1) setLi(li + 1);
+    if (clip) goScene(si + 1);
+    else if (li < scene.lines.length - 1) setLi(li + 1);
     else goScene(si + 1);
-  }, [scene, li, si, goScene]);
+  }, [scene, li, si, goScene, clip]);
 
   const prev = useCallback(() => {
-    if (li > 0) setLi(li - 1);
+    if (clip && si > 0) goScene(si - 1);
+    else if (li > 0) setLi(li - 1);
     else if (si > 0) goScene(si - 1);
-  }, [li, si, goScene]);
+  }, [li, si, goScene, clip]);
 
   // The narrator's own recording of the scene, when there is one: it drives the lines and the next scene.
-  const clip = story && scene ? sceneClip(story.id, scene.id) : undefined;
-  const playerRef = useRef<ReturnType<typeof createAudioPlayer> | null>(null);
   useEffect(() => {
     if (!clip) return;
+    let active = true;
+    let failure: ReturnType<typeof setTimeout> | undefined;
     try {
       playerRef.current = createAudioPlayer(clip);
     } catch {
       playerRef.current = null;
+      failure = setTimeout(() => { if (active) setFailedClip(sceneKey); }, 0);
     }
     return () => {
+      active = false;
+      clearTimeout(failure);
       try {
         playerRef.current?.remove();
       } catch {}
       playerRef.current = null;
     };
-  }, [clip]);
+  }, [clip, sceneKey]);
 
   useEffect(() => {
     if (!clip || !scene || phase !== 'playing') return;
     const p = playerRef.current;
     if (!p) return;
-    if (paused || muted) {
+    p.muted = muted;
+    if (paused) {
       try {
         p.pause();
       } catch {}
@@ -104,25 +117,24 @@ export default function StoryPlayer() {
     let done = false;
     const lens = scene.lines.map((l) => l.length);
     const total = lens.reduce((a, b) => a + b, 0) || 1;
-    const sub = p.addListener('playbackStatusUpdate', (st: { didJustFinish?: boolean }) => {
+    const sub = p.addListener('playbackStatusUpdate', (st: { didJustFinish?: boolean; duration?: number; currentTime?: number }) => {
+      const duration = st.duration || p.duration;
+      if (duration > 0) {
+        const fraction = Math.min(1, (st.currentTime ?? p.currentTime) / duration);
+        let accumulated = 0;
+        let activeLine = lens.length - 1;
+        for (let k = 0; k < lens.length; k++) { accumulated += lens[k] / total; if (fraction < accumulated) { activeLine = k; break; } }
+        setLi(previous => previous === activeLine ? previous : activeLine);
+      }
       if (st.didJustFinish && !done) {
         done = true;
         timers.push(setTimeout(() => goScene(si + 1), 600));
       }
     });
-    const schedule = () => {
-      const dur = p.duration && p.duration > 0 ? p.duration : (scene.lines.reduce((a, l) => a + estimateMs(l), 0) / 1000);
-      const now = p.currentTime || 0;
-      let acc = 0;
-      lens.forEach((n, k) => {
-        if (k > 0 && acc / total * dur > now) timers.push(setTimeout(() => setLi(k), (acc / total * dur - now) * 1000));
-        acc += n;
-      });
-    };
     try {
       p.play();
     } catch {}
-    const wait = setTimeout(schedule, 400); // duration is known shortly after load
+    const wait = setTimeout(() => { if (!p.isLoaded) setFailedClip(sceneKey); }, 12000);
     timers.push(wait);
     return () => {
       sub.remove();
@@ -131,7 +143,7 @@ export default function StoryPlayer() {
         p.pause();
       } catch {}
     };
-  }, [clip, phase, paused, muted, si, scene, goScene]);
+  }, [clip, phase, paused, muted, si, scene, sceneKey, goScene]);
 
   // otherwise narrate the current line with the device voice (or timed subtitles), then advance
   useEffect(() => {
@@ -142,15 +154,18 @@ export default function StoryPlayer() {
 
   if (!story || !scene) {
     return (
-      <View style={[st.fill, st.center]}>
-        <Text style={st.sub}>சரிதம் கிடைக்கவில்லை</Text>
+      <View style={[st.fill, st.center, { padding: 28, gap: 14 }]}>
+        <StatusBar style="light" />
+        <Text style={[st.sceneTitle, { textAlign: 'center' }]}>இந்தச் சரிதம் இன்னும் சரிபார்க்கப்படவில்லை</Text>
+        <Text style={[st.sub, { textAlign: 'center' }]}>மூலநூல் பக்கங்களுடன் ஒப்பிட்டு, முழுமையாகக் கதை வடிவமைத்த பிறகே இங்கு திறக்கும்.</Text>
+        <GoldButton label="தயாரான திருச்சரிதத்திற்குச் செல்லுங்கள்" icon={Icons.arrow(C.ink)} onPress={() => router.replace('/nayanmar')} />
       </View>
     );
   }
 
   const start = async () => {
     const ok = await prepareNarrator();
-    if (!ok) {
+    if (!ok && !clip) {
       setVoiceNote(true);
       setTimeout(() => setVoiceNote(false), 5000);
     }
@@ -175,9 +190,9 @@ export default function StoryPlayer() {
         <>
           {/* tap zones: back | pause | next */}
           <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]}>
-            <Pressable accessibilityLabel="முந்தைய வரி" style={{ flex: 3 }} onPress={prev} />
+            <Pressable accessibilityLabel={clip ? 'முந்தைய காட்சி' : 'முந்தைய வரி'} style={{ flex: 3 }} onPress={prev} />
             <Pressable accessibilityLabel={paused ? 'தொடர்' : 'இடைநிறுத்து'} style={{ flex: 4 }} onPress={() => setPaused((p) => !p)} />
-            <Pressable accessibilityLabel="அடுத்த வரி" style={{ flex: 3 }} onPress={next} />
+            <Pressable accessibilityLabel={clip ? 'அடுத்த காட்சி' : 'அடுத்த வரி'} style={{ flex: 3 }} onPress={next} />
           </View>
 
           <View pointerEvents="box-none" style={[st.top, { paddingTop: insets.top + 10 }]}>
@@ -231,8 +246,9 @@ export default function StoryPlayer() {
             <Text style={st.kicker}>{story.purana}</Text>
             <Text style={st.title}>{story.title}</Text>
             <Text style={st.sub}>{story.subtitle} · {story.minutes} நிமிடம்</Text>
-            <Text style={st.src}>{story.source}</Text>
-            <GoldButton label="சரிதத்தைத் தொடங்கு" icon={Icons.play()} onPress={start} style={{ marginTop: 10 }} />
+            <Text style={st.src}>மரபு நூலைத் தழுவிய தமிழ்க் காட்சியாக்கம்</Text>
+            <Pressable accessibilityRole="button" onPress={() => setShowSource(true)}><Text style={[st.src, { color: C.gold }]}>மூலமும் காட்சிக் குறிப்பும் →</Text></Pressable>
+            <GoldButton label="கதைப்பயணத்தைத் தொடங்கு" icon={Icons.play()} onPress={start} style={{ marginTop: 10 }} />
             {saved?.id === story.id && !saved.completed && (saved.scene > 0 || saved.line > 0) && (
               <GoldButton label={`விட்ட இடத்திலிருந்து தொடருங்கள் · காட்சி ${saved.scene + 1}`} outline icon={Icons.play()} onPress={() => {
                 const sceneIndex = Math.max(0, Math.min(saved.scene, story.scenes.length - 1));
@@ -241,10 +257,17 @@ export default function StoryPlayer() {
                 setPaused(false); void start();
               }} />
             )}
-            <Text style={st.hint}>இடப்புறம் தொட்டால் முந்தையது · நடுவில் இடைநிறுத்தம் · வலப்புறம் அடுத்தது</Text>
+            <Text style={st.hint}>நடுவில் தொட்டால் இடைநிறுத்தம் · ஓரங்களில் தொட்டால் முன்னும் பின்னும் செல்லலாம்</Text>
+            {scene.audio && <Text style={st.hint}>படங்களுக்கும் குரலுக்கும் முதல்முறை இணைய இணைப்பு தேவை.</Text>}
           </View>
         </View>
       )}
+      <Modal visible={showSource} animationType="slide" onRequestClose={() => setShowSource(false)}>
+        <View style={{ flex: 1, backgroundColor: C.night, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }}><Text style={[st.sceneTitle, { flex: 1 }]}>மூலமும் காட்சியாக்கமும்</Text><IconButton label="மூடு" onPress={() => setShowSource(false)}>{Icons.close()}</IconButton></View>
+          <ScrollView contentContainerStyle={{ padding: 22, gap: 18 }}><Text style={st.sub}>காட்சியின் இடம், ஒளி, ஆடை, முகத்தோற்றம் ஆகியவை கதையை உணரச் செய்யும் கலை வடிவங்கள். இவை துல்லியமான தொல்லியல் மறுகட்டமைப்பாகக் காட்டப்படவில்லை.</Text></ScrollView>
+        </View>
+      </Modal>
 
       {phase === 'ended' && (
         <View style={[StyleSheet.absoluteFill, st.introBg, st.center, { paddingHorizontal: 24 }]}>
@@ -315,7 +338,7 @@ const st = StyleSheet.create({
   introBg: { backgroundColor: 'rgba(5,7,14,0.45)' },
   introTop: { paddingHorizontal: 12 },
   kicker: { fontFamily: F.ta, fontSize: 13, color: C.gold, letterSpacing: 1.5 },
-  title: { fontFamily: F.taBold, fontSize: 34, lineHeight: 50, color: C.cream, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 12 },
+  title: { fontFamily: F.taBold, fontSize: 28, lineHeight: 43, color: C.cream, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 12 },
   sub: { fontFamily: F.ta, fontSize: 15, lineHeight: 25, color: '#eadfc6' },
   src: { fontFamily: F.ta, fontSize: 11.5, lineHeight: 19, color: 'rgba(234,223,198,0.75)' },
   hint: { fontFamily: F.ta, fontSize: 11.5, color: 'rgba(234,223,198,0.7)', textAlign: 'center', marginTop: 6 },

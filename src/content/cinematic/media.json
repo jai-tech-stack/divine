@@ -1,0 +1,17 @@
+{
+  "tirunilakanta": {
+    "images": {
+      "statue": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/statue-026cfb64e2051589.webp",
+      "potter": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/potter-7f455503bcf9b61e.webp",
+      "guest": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/guest-3424220f4292134d.webp",
+      "pond": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/pond-4166aa9a85c7ecc4.webp"
+    },
+    "audio": {
+      "stone-memory": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/stone-memory-11b1bc378cd19766.m4a",
+      "clay-and-vow": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/clay-and-vow-b19f603d5bc5e583.m4a",
+      "trusted-bowl": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/trusted-bowl-5035a5f703edc07c.m4a",
+      "pond-and-truth": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/pond-and-truth-d42d280b532b3676.m4a",
+      "return-to-stone": "https://oojhfezpvpdfrjjdsjod.supabase.co/storage/v1/object/public/cinema-media/tirunilakanta/v1/return-to-stone-9392433ce84e20f7.m4a"
+    }
+  }
+}

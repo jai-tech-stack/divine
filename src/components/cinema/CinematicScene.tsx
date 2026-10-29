@@ -16,6 +16,7 @@ const native = Platform.OS !== 'web';
  */
 export function CinematicScene({ scene, durationMs, paused }: { scene: Scene; durationMs: number; paused: boolean }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const [imageFailed, setImageFailed] = useState(false);
   const [cam] = useState(() => new Animated.Value(0));
   const [fx] = useState(() => new Animated.Value(0));
   const [shake] = useState(() => new Animated.Value(0));
@@ -80,7 +81,7 @@ export function CinematicScene({ scene, durationMs, paused }: { scene: Scene; du
 
   return (
     <Animated.View onLayout={(e: LayoutChangeEvent) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })} style={[StyleSheet.absoluteFill, { backgroundColor: '#000', transform: [{ translateX: shake }] }]}>
-      {scene.image ? (
+      {scene.image && !imageFailed ? (
         (() => {
           // the artwork is wide; fit it to the screen height and drift slowly across it
           const aspect = scene.imageAspect ?? 1.5;
@@ -101,7 +102,7 @@ export function CinematicScene({ scene, durationMs, paused }: { scene: Scene; du
                   { scale: cam.interpolate({ inputRange: [0, 1], outputRange: [1, 1.07] }) },
                 ],
               }}>
-              <Image source={scene.image} style={{ width: iw, height: ih }} resizeMode="cover" />
+              <Image source={scene.image} style={{ width: iw, height: ih }} resizeMode="cover" onError={() => setImageFailed(true)} />
             </Animated.View>
           );
         })()

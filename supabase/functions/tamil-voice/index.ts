@@ -39,7 +39,9 @@ Deno.serve(async (req) => {
         model: 'gemini-3.8-flash-lite-tts', store: false,
         input: [{ type: 'user_input', content: [{ type: 'text', text: text.trim(), annotations: [{
           type: 'speech_metadata',
-          style: 'Warm, calm, reassuring, dignified Tamil voice. Clear natural Tamil pronunciation, gentle measured pace, short pauses between sentences. Speak the transcript exactly. No music or sound effects.',
+          style: payload?.mode === 'narration'
+            ? 'A natural, warm Tamil storyteller narrating a thoughtful period story. Clear conversational Tamil, gentle expressive changes at scene transitions, unhurried pauses between sentences. Invite the listener into the setting without theatrical shouting or chanting. Speak the transcript exactly. No music or sound effects.'
+            : 'Warm, calm, reassuring, dignified Tamil voice. Clear natural Tamil pronunciation, gentle measured pace, short pauses between sentences. Speak the transcript exactly. No music or sound effects.',
         }] }] }],
         response_format: { type: 'audio' },
         generation_config: { speech_config: [{ voice: 'Kore' }] },

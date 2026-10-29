@@ -12,12 +12,14 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 
 import { C } from '@/theme';
+import { startAccount } from '@/lib/account';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const theme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.night, card: C.night, primary: C.gold, text: C.cream } };
 
 export default function RootLayout() {
+  useEffect(startAccount, []);
   const [loaded, error] = useFonts({
     NotoSerifTamil_400Regular,
     NotoSerifTamil_600SemiBold,
@@ -41,6 +43,7 @@ export default function RootLayout() {
     <ThemeProvider value={theme}>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.night }, animation: 'fade' }}>
+        <Stack.Screen name="(main)" />
         <Stack.Screen name="stories/[id]/index" options={{ animation: 'fade', presentation: 'fullScreenModal' }} />
       </Stack>
     </ThemeProvider>

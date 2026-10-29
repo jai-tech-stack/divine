@@ -16,9 +16,9 @@ Run `node tools/upload-content.cjs --check` to validate local content, or `--upl
 
 Run `node tools/verify-remote-books.mjs` to compare every downloaded book with its canonical local JSON. Import does not mark OCR text as proofread: its review status is retained.
 
-Book readers download published documents from Supabase on first open, validate the complete page sequence and persist them in the app documents directory (browser Cache Storage on web). Offline loads reuse that copy. Original source JSON stays in this repository for auditing and import, outside the app bundle. Local reading position is preserved. Account progress sync is not yet integrated.
+Book readers download published documents from Supabase on first open, validate the complete page sequence and persist them in the app documents directory (browser Cache Storage on web). Offline loads reuse that copy. Original source JSON stays in this repository for auditing and import, outside the app bundle. Local reading position is preserved.
 
-The deployed `wisdom` function uses existing server-side provider keys, Tamil-only replies and provider request timeouts. `ai-usage.sql` provides atomic daily provider quotas; only service_role can reserve requests. Existing GEMINI_DAILY_LIMIT/GROQ_DAILY_LIMIT values are respected (default 20, capped at 1,000). Configured model names were updated after legacy models returned 404; a live Tamil response was verified from Groq. The app derives the wisdom endpoint from the public Supabase URL unless explicitly overridden. Device Tamil speech is supported; the reference-video voice has not been cloned or connected to a voice-generation provider.
+The deployed `wisdom` function uses existing server-side provider keys, Tamil-only replies and provider request timeouts. `ai-usage.sql` provides atomic daily provider quotas; only service_role can reserve requests. Existing GEMINI_DAILY_LIMIT/GROQ_DAILY_LIMIT values are respected (default 20, capped at 1,000). Configured model names were updated after legacy models returned 404; a live Tamil response was verified from Groq. The app derives the wisdom endpoint from the public Supabase URL unless explicitly overridden. Natural Tamil speech uses the separate endpoint described below, with installed device speech as fallback.
 
 Recovery requires a maintenance window: rename the current public schema aside, restore the archived schema name, restore original ACLs from the recorded inventory and the old auth trigger, then reload PostgREST. Do not run an unreviewed DROP/RESET or assume restoring schema names alone restores revoked permissions.
 # Tamil voice
@@ -33,4 +33,39 @@ The mobile client deletes temporary playback files, cancels pending speech on
 stop, and falls back to the installed Tamil voice if the service is unavailable.
 Deploy with `npx supabase functions deploy tamil-voice --project-ref oojhfezpvpdfrjjdsjod --use-api`.
 No additional provider key or native dependency is required.
+
+## Account and progress synchronization
+
+The `/account` screen supports email/password login, signup, confirmation resend,
+and password recovery. The public Supabase client persists sessions locally;
+provider keys and service-role credentials are never part of this client.
+PKCE email callbacks accept only `divinelife://account`. This exact URL was added
+to the project's redirect allowlist on 2026-10-27. Confirmation and recovery
+must be requested and opened on the same installed app/device.
+
+**Custom SMTP is not configured.** Supabase's default sender is restricted to
+project-team email addresses. Public signup and recovery email delivery require
+the owner to connect an SMTP provider in Authentication > Emails > SMTP Settings.
+Do not disable email confirmation to work around this. No emails were sent by
+the automated account tests. Existing confirmed accounts can sign in.
+
+`progress-sync.sql` adds an optimistic revision counter and an authenticated
+compare-and-save RPC. Row-level security restricts all access to the signed-in
+owner. Conflicting device writes refetch and merge, rather than blindly overwrite.
+Guest history and each account use different local storage keys. Guest import is
+an explicit action in the account screen; another account's local cache is never
+imported. Offline edits persist locally and retry while the app is running, on
+foreground resume, and from the manual sync button. No background-task promise
+is made. Preferences and downloaded book files remain device-local.
+
+Read history and practice dates merge by union; bookmarks and positions use
+per-field edit clocks. Same-day counters and chant totals use maximums, so
+repeated synchronization cannot inflate them. Counts for simultaneous offline
+practice on two devices are conservative, not summed. Device clocks should be
+set correctly for the latest-position/bookmark rule.
+
+Checks: `node tools/check-progress.mjs`, `node tools/check-progress-sync.mjs`,
+and `node tools/check-live-account.mjs`. The last command uses CLI-held admin
+credentials only to create and remove disposable `example.invalid` users;
+actual login, data access and compare-and-save requests use normal user tokens.
 

@@ -51,6 +51,7 @@ const reopened = runtime();
 await reopened.progress.setLast(2, 3);
 assert.equal(reopened.snapshot().storyLast.scene, 3, 'Story scene survives restart');
 assert.equal(reopened.snapshot().bookLast.page, 108, 'Book page survives restart');
+assert.equal(reopened.snapshot().readingLast.kind, 'gita', 'The latest reading activity is tracked independently of mantra activity');
 assert.equal(reopened.snapshot().gitaLast.v, 3);
 assert.equal(reopened.snapshot().chantLog[0].rounds, 3);
 assert.equal(app.streak(['2026-10-23', '2026-10-24'], new Date(2026, 9, 25, 8)), 2, 'Streak stays intact before first activity today');

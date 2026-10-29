@@ -22,4 +22,4 @@ assert.match(get(17,23).sa,/ॐ/);
 assert.match(get(17,23).ta,/ஓம்/);
 assert.match(get(17,25).sa,/मोक्षकाङ्क्षिभिः/);
 assert.match(get(18,68).sa,/भक्तिं/);
-console.log('Gita checks passed: 18 chapters, 700 numbered verses plus the chapter 13 opening question; Tamil readings and spelling regressions checked.');
+console.log('Gita checks passed: 18 chapters and 701 verses in the selected source edition; chapter 13 verse labels are mapped for the app. Tamil readings and spelling regressions checked.');

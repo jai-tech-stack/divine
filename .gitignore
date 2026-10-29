@@ -52,3 +52,4 @@ example
 credentials.json
 /artifacts/
 /supabase/.temp/
+/.gradle-build-cache/

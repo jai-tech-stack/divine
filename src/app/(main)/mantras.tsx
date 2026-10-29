@@ -1,7 +1,7 @@
 import { DeityImage } from '@/components/DeityImage';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +22,10 @@ export default function MantraHome() {
   const p = useProgress();
   const { pal, prefs } = usePalette();
   const [settings, setSettings] = useState(false);
-  const [group, setGroup] = useState<string | null>(null);
+  const params = useLocalSearchParams<{ group?: string }>();
+  const routeGroup = Array.isArray(params.group) ? params.group[0] : params.group;
+  const [groupOverride, setGroupOverride] = useState<string | null | undefined>(undefined);
+  const group = groupOverride === undefined ? routeGroup ?? null : groupOverride;
   const [q, setQ] = useState('');
   const today = mantraOfTheDay();
   const en = prefs.meaning === 'en';
@@ -39,18 +42,20 @@ export default function MantraHome() {
   }, [q, group, p.mantraFavs]);
 
   const showGrid = !group && !q.trim();
+  const dayName = DAYS[new Date().getDay()];
+  const forToday = useMemo(() => MANTRAS.filter((m) => m.when.includes(dayName)).slice(0, 10), [dayName]);
   const g = group && group !== 'favs' ? groupOf(group) : null;
 
   return (
     <View style={{ flex: 1, backgroundColor: pal.bg }}>
       <View style={[st.appbar, { paddingTop: insets.top + 4 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="பின்செல்" onPress={() => (group ? setGroup(null) : router.back())} hitSlop={8} style={st.iconBtn}>
+        {group ? <Pressable accessibilityRole="button" accessibilityLabel="மந்திர வகைகள்" onPress={() => setGroupOverride(null)} hitSlop={8} style={st.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={pal.ink} />
-        </Pressable>
+        </Pressable> : <View style={st.iconBtn} />}
         <Text style={[st.appT, { color: pal.ink }]} numberOfLines={1}>
-          {g ? g.ta : group === 'favs' ? 'பிடித்தவை' : 'மந்திரங்கள் & ஸ்தோத்திரங்கள்'}
+          {g ? g.ta : group === 'favs' ? 'பிடித்தவை' : 'மந்திரங்கள் · துதிகள்'}
         </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="பிடித்தவை" onPress={() => setGroup(group === 'favs' ? null : 'favs')} hitSlop={8} style={st.iconBtn}>
+        <Pressable accessibilityRole="button" accessibilityLabel="பிடித்தவை" onPress={() => setGroupOverride(group === 'favs' ? null : 'favs')} hitSlop={8} style={st.iconBtn}>
           <Ionicons name={group === 'favs' ? 'heart' : 'heart-outline'} size={23} color={group === 'favs' ? '#D9534F' : pal.ink} />
         </Pressable>
       </View>
@@ -88,6 +93,25 @@ export default function MantraHome() {
               </View>
             </Pressable>
 
+            {forToday.length > 0 && (
+              <>
+                <View style={st.secRow}>
+                  <Text style={[st.secT, { color: pal.ink }]}>இன்று ({dayName}) உகந்தவை</Text>
+                  <Text style={[st.secS, { color: pal.sub }]}>{forToday.length}</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 8 }} style={{ marginHorizontal: -16 }} contentInset={{ left: 16 }}>
+                  <View style={{ width: 6 }} />
+                  {forToday.map((m) => (
+                    <Pressable key={m.id} accessibilityRole="button" onPress={() => router.push(`/mantras/${m.id}`)} style={[st.mini, { backgroundColor: pal.card, borderColor: pal.line }]}>
+                      <DeityImage source={groupOf(m.deity).image} style={st.miniImg} resizeMode="cover" />
+                      <Text style={[st.miniName, { color: pal.ink }]} numberOfLines={2}>{en && MANTRAS_EN[m.id] ? MANTRAS_EN[m.id].name : m.name}</Text>
+                      <Text style={[st.miniSub, { color: pal.sub }]} numberOfLines={1}>{groupOf(m.deity).ta}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
             {/* deity grid */}
             <View style={st.secRow}>
               <Text style={[st.secT, { color: pal.ink }]}>பாராயணத் தொகுப்புகள்</Text>
@@ -98,7 +122,7 @@ export default function MantraHome() {
                 const n = MANTRAS.filter((m) => m.deity === d.id).length;
                 if (!n) return null;
                 return (
-                  <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${d.ta}, ${n} ${n === 1 ? 'பதிவு' : 'பதிவுகள்'}`} onPress={() => setGroup(d.id)} style={({ pressed }) => [st.tile, { width: tileW, height: tileW * 1.22 }, pressed && { transform: [{ scale: 0.98 }] }]}>
+                  <Pressable key={d.id} accessibilityRole="button" accessibilityLabel={`${d.ta}, ${n} ${n === 1 ? 'பதிவு' : 'பதிவுகள்'}`} onPress={() => setGroupOverride(d.id)} style={({ pressed }) => [st.tile, { width: tileW, height: tileW * 1.22 }, pressed && { transform: [{ scale: 0.98 }] }]}>
                     <DeityImage source={d.image} style={FILL} resizeMode="cover" />
                     <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.88)']} locations={[0.45, 1]} style={StyleSheet.absoluteFill} />
                     <View style={st.tileText}>
@@ -158,10 +182,11 @@ function Card({ m, pal, fav, script, en }: { m: Mantra; pal: Palette; fav: boole
         <Text style={[st.cardLine, { color: pal.sub }, displayScript === 'sa' && { fontFamily: F.deva }, displayScript === 'en' && { fontFamily: undefined, fontStyle: 'italic' }]} numberOfLines={1}>
           {m.lines[0][displayScript]}
         </Text>
+        {!m.source && !m.references?.length && <Text style={{ fontFamily: F.taSemi, fontSize: 10.5, color: pal.accent }}>மூல ஒப்பீடு நிலுவையில்</Text>}
         <View style={st.meta}>
           <Meta pal={pal} icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={m.originalLanguage === 'ta' ? 'தமிழ்ப் பாடல்' : m.originalLanguage === 'hi' ? 'இந்தி ஆரத்தி' : m.kind === 'mantra' ? 'மந்திரம்' : 'ஸ்தோத்திரம்'} />
           <Meta pal={pal} icon="reorder-three" text={countLabel} />
-          <Meta pal={pal} icon="repeat" text={`${m.japa}`} />
+          <Meta pal={pal} icon="repeat" text={`விருப்பம் ${m.japa} முறை`} />
         </View>
       </View>
       <View style={{ alignItems: 'center', gap: 6 }}>
@@ -208,6 +233,10 @@ const st = StyleSheet.create({
   tileCount: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
   tileCountT: { color: '#F3D48F', fontFamily: F.num, fontSize: 13 },
   banner: { height: 150, borderRadius: 20, overflow: 'hidden', backgroundColor: '#000' },
+  mini: { width: 150, borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  miniImg: { width: '100%', height: 88 },
+  miniName: { fontFamily: F.taBold, fontSize: 13.5, lineHeight: 21, paddingHorizontal: 10, paddingTop: 8 },
+  miniSub: { fontFamily: F.ta, fontSize: 11, paddingHorizontal: 10, paddingBottom: 9 },
   empty: { fontFamily: F.ta, fontSize: 13.5, textAlign: 'center', marginTop: 30 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, borderWidth: 1, padding: 10 },
   thumb: { width: 76, height: 92, borderRadius: 14 },

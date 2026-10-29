@@ -35,6 +35,8 @@ export type Scene = {
   effect?: 'lightning' | 'tremor' | 'bloom';
   /** Optional AI or artist painting. When present it replaces the drawn backdrop. */
   image?: ImageSourcePropType;
+  /** Published, pre-rendered Tamil narration for this complete scene. */
+  audio?: string;
   /** width ÷ height of the artwork (default 1.5) */
   imageAspect?: number;
   /** where the slow pan starts and ends across the artwork, 0 = left edge, 1 = right edge */
@@ -58,6 +60,8 @@ export type Story = {
   subtitle: string;
   purana: string;
   source: string;
+  /** Set only when the narrative has been compared against named, page-level source material. */
+  sourceReviewed?: boolean;
   minutes: number;
   scenes: Scene[];
   verse: Verse;

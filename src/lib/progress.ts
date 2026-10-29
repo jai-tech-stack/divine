@@ -8,6 +8,7 @@ export type Progress = {
   gitaLast: { c: number; v: number } | null;
   storyLast: { id: string; scene: number; line: number; completed: boolean } | null;
   bookLast: { id: string; page: number } | null;
+  readingLast: { kind: 'gita' | 'story' | 'book'; ref: string; at: number } | null;
   gitaSaved: string[];
   mantraFavs: string[];
   streakDays: string[]; // YYYY-MM-DD with any practice
@@ -21,7 +22,10 @@ export type Progress = {
 };
 
 const KEY = 'divine-life.progress.v1';
-let state: Progress = { gitaRead: [], gitaLast: null, storyLast: null, bookLast: null, gitaSaved: [], mantraFavs: [], streakDays: [], commitments: [], lastActivity: null, chantLog: [], daily: { date: '', read: 0, chant: 0, talk: 0 } };
+export const emptyProgress = (): Progress => ({ gitaRead: [], gitaLast: null, storyLast: null, bookLast: null, readingLast: null, gitaSaved: [], mantraFavs: [], streakDays: [], commitments: [], lastActivity: null, chantLog: [], daily: { date: '', read: 0, chant: 0, talk: 0 } });
+let state: Progress = emptyProgress();
+let storageKey = KEY;
+let switching = Promise.resolve();
 let loading: Promise<void> | null = null;
 let writes = Promise.resolve();
 const listeners = new Set<(p: Progress) => void>();
@@ -31,7 +35,7 @@ const today = () => localDateKey();
 function load(): Promise<void> {
   if (!loading) loading = (async () => {
     try {
-      const raw = await AsyncStorage.getItem(KEY);
+      const raw = await AsyncStorage.getItem(storageKey);
       if (raw) state = { ...state, ...JSON.parse(raw) };
     } catch {}
     emit();
@@ -47,7 +51,8 @@ function save(next: Progress) {
   state = next;
   emit();
   const snapshot = JSON.stringify(state);
-  writes = writes.then(() => AsyncStorage.setItem(KEY, snapshot)).catch(() => {});
+  const target = storageKey;
+  writes = writes.then(() => AsyncStorage.setItem(target, snapshot)).catch(() => {});
 }
 
 const dayOf = (): Progress['daily'] => (state.daily && state.daily.date === today() ? state.daily : { date: today(), read: 0, chant: 0, talk: 0 });
@@ -57,12 +62,12 @@ const toggle = (list: string[], key: string) => (list.includes(key) ? list.filte
 const actions = {
   bookPosition(id: string, page: number) {
     const date = today();
-    save({ ...state, bookLast: { id, page }, daily: { ...dayOf(), read: Math.max(1, dayOf().read) },
+    save({ ...state, bookLast: { id, page }, readingLast: { kind: 'book', ref: id, at: Date.now() }, daily: { ...dayOf(), read: Math.max(1, dayOf().read) },
       streakDays: state.streakDays.includes(date) ? state.streakDays : [...state.streakDays.slice(-60), date] });
   },
   storyPosition(id: string, scene: number, line: number, completed = false) {
     const date = today();
-    save({ ...state, storyLast: { id, scene, line, completed },
+    save({ ...state, storyLast: { id, scene, line, completed }, readingLast: { kind: 'story', ref: id, at: Date.now() },
       daily: { ...dayOf(), read: Math.max(1, dayOf().read) },
       streakDays: state.streakDays.includes(date) ? state.streakDays : [...state.streakDays.slice(-60), date],
     });
@@ -74,12 +79,13 @@ const actions = {
       ...state,
       gitaRead: state.gitaRead.includes(key) ? state.gitaRead : [...state.gitaRead, key],
       gitaLast: { c, v },
+      readingLast: { kind: 'gita', ref: `${c}.${v}`, at: Date.now() },
       daily: { ...dayOf(), read: dayOf().read + 1 },
       streakDays: state.streakDays.includes(d) ? state.streakDays : [...state.streakDays.slice(-60), d],
     });
   },
   setLast(c: number, v: number) {
-    save({ ...state, gitaLast: { c, v }, lastActivity: { kind: 'gita', ref: `${c}.${v}`, at: Date.now() } });
+    save({ ...state, gitaLast: { c, v }, readingLast: { kind: 'gita', ref: `${c}.${v}`, at: Date.now() }, lastActivity: { kind: 'gita', ref: `${c}.${v}`, at: Date.now() } });
   },
   openedMantra(id: string) {
     save({ ...state, lastActivity: { kind: 'mantra', ref: id, at: Date.now() } });
@@ -115,9 +121,38 @@ const actions = {
 
 // A quick first tap must wait for saved data, rather than overwrite it during hydration.
 export const progress = Object.fromEntries(Object.entries(actions).map(([name, action]) => [name, async (...args: unknown[]) => {
+  await switching;
   await load();
   (action as (...values: unknown[]) => void)(...args);
 }])) as { [K in keyof typeof actions]: (...args: Parameters<typeof actions[K]>) => Promise<void> };
+
+/** The guest history and each account have separate local files. */
+export const progressStore = {
+  async ready() { await switching; await load(); },
+  get: () => state,
+  subscribe(listener: (value: Progress) => void) { listeners.add(listener); return () => { listeners.delete(listener); }; },
+  replace(value: Progress) { save(value); },
+  async guest(): Promise<Progress> {
+    const raw = await AsyncStorage.getItem(KEY);
+    return raw ? { ...emptyProgress(), ...JSON.parse(raw) } : emptyProgress();
+  },
+  selectUser(id: string | null) {
+    switching = switching.then(async () => {
+      await load(); await writes;
+      const nextKey = id ? `${KEY}.user.${id}` : KEY;
+      if (storageKey === nextKey) return;
+      storageKey = nextKey;
+      state = emptyProgress();
+      // Hydrate this account only; never copy another account's cached snapshot.
+      loading = (async () => {
+        try { const raw = await AsyncStorage.getItem(storageKey); if (raw) state = { ...emptyProgress(), ...JSON.parse(raw) }; } catch {}
+        emit();
+      })();
+      await loading;
+    });
+    return switching;
+  },
+};
 
 export function useProgress(): Progress {
   const [p, setP] = useState(state);

@@ -40,7 +40,7 @@ function load(file){
  if(cache.has(file))return cache.get(file).exports;
  const module={exports:{}};cache.set(file,module);
  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
- new Function('require','module','exports',code)(name=>{if(/\.(jpg|png)$/.test(name))return 0;if(!name.startsWith('.'))throw Error(name);return load(path.resolve(path.dirname(file),name));},module,module.exports);
+ new Function('require','module','exports',code)(name=>{if(/\.(jpg|png)$/.test(name))return 0;if(name.startsWith('@/'))return load(path.resolve('src',name.slice(2)));if(!name.startsWith('.'))throw Error(name);return load(path.resolve(path.dirname(file),name));},module,module.exports);
  return module.exports;
 }
 const catalogue=load(fileURLToPath(new URL('../src/content/mantraLib.ts',import.meta.url)));
