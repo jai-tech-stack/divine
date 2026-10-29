@@ -1,0 +1,103 @@
+[
+  {
+    "id": "eighteen-puranas",
+    "title": "பதினெண் புராணங்கள்",
+    "category": "புராணங்கள்",
+    "originalFilename": "பதினெண் புராணங்கள்.pdf",
+    "pages": 750,
+    "bytes": 15949312,
+    "sha256": "7a57dc3ce680ac82571bb1180ab483b76879871ea12942d46c8fbf513ef42a98",
+    "coverPage": 1
+  },
+  {
+    "id": "nayanmar-stories",
+    "title": "நாயன்மார் கதைகள்",
+    "category": "சைவம்",
+    "originalFilename": "நாயன்மார் கதைகள் - கி. வா. ஜகந்நாதன்.pdf",
+    "pages": 443,
+    "bytes": 34311692,
+    "sha256": "f32bbf7cd16e45385b272a28595b761734383cc83da25fa7e52e7428523f2a03",
+    "coverPage": 1
+  },
+  {
+    "id": "periyapuranam",
+    "title": "பெரியபுராணம்",
+    "category": "சைவம்",
+    "originalFilename": "periyapuram.pdf",
+    "pages": 1008,
+    "bytes": 93912453,
+    "sha256": "cb2523022889116881c69f90dd2d031e7bd13b4720659a4acec0209fadc6ed7c",
+    "coverPage": 1
+  },
+  {
+    "id": "bogar-7000-3",
+    "title": "போகர் 7000 — மூன்றாம் காண்டம்",
+    "category": "சித்தர் நூல்கள்",
+    "originalFilename": "Bogar 7000 3m Kaandam.pdf",
+    "pages": 160,
+    "bytes": 63483613,
+    "sha256": "63fdd1d9023655d433489bef607e14475a4cf4f0d9987030db355a45788ecdff",
+    "coverPage": 1
+  },
+  {
+    "id": "bogar-7000-2",
+    "title": "போகர் 7000 — இரண்டாம் காண்டம்",
+    "category": "சித்தர் நூல்கள்",
+    "originalFilename": "Bogar 7000 2m Kaandam (Low resolution).pdf",
+    "pages": 136,
+    "bytes": 17457384,
+    "sha256": "f40b1a532c28c00e5fa9835a0666f9250ac87a55df0ee72a1d30ecbdce732ec9",
+    "coverPage": 1,
+    "note": "குறைந்த தெளிவுள்ள ஸ்கேன்; உரைக்குக் கூடுதல் மெய்ப்புத் திருத்தம் தேவை."
+  },
+  {
+    "id": "siddhar-yoga",
+    "title": "சித்தர்கள் காட்டிய யோகநெறி",
+    "category": "சித்தர் நூல்கள்",
+    "originalFilename": "Chittarkal Kattiya Yokaneri.pdf",
+    "pages": 118,
+    "bytes": 3058410,
+    "sha256": "c20d374be7b11c7f5712d9224b810b40776605b2247ee9b079d21f0e72e107e6",
+    "coverPage": 1
+  },
+  {
+    "id": "sudarsana-satakam",
+    "title": "ஸ்ரீ சுதர்சன சதகம்",
+    "category": "வைணவம்",
+    "originalFilename": "Sri Sudarsanasatakamu.pdf",
+    "pages": 168,
+    "bytes": 3404269,
+    "sha256": "e06ea041bcc9abc9e06fdac6abf81992fda50a349306ccae6873d0b2252a7298",
+    "coverPage": 1
+  },
+  {
+    "id": "chakravarthi-thirumagan",
+    "title": "சக்கரவர்த்தித் திருமகன் சரித மாலை",
+    "category": "இதிகாசம்",
+    "originalFilename": "TVA_BOK_0008977_சக்கரவர்த்தித்_திருமகன்_சரித_மாலை.pdf",
+    "pages": 25,
+    "bytes": 40419912,
+    "sha256": "ff01c1861aaa76ff018a2ea7326c09086b922a401d22b2cb6983eddc2035f2ac",
+    "coverPage": 1
+  },
+  {
+    "id": "bhagavata-puranam",
+    "title": "ஸ்ரீமத் பாகவத புராணம்",
+    "category": "புராணங்கள்",
+    "originalFilename": "Sreemath Bhagavadha Puranam.pdf",
+    "pages": 170,
+    "bytes": 3289189,
+    "sha256": "5a945968a83395f1c4f3ba622e05521cdf6f7965336b9466586b9289875c74b1",
+    "coverPage": 1
+  },
+  {
+    "id": "kakapujandar",
+    "title": "கருணைக்கடல் காகபுஜண்டர்",
+    "category": "சித்தர் நூல்கள்",
+    "originalFilename": "Karunaikatal Kakapujantar.pdf",
+    "pages": 236,
+    "bytes": 3764831,
+    "sha256": "cc573d74f6f563d98b1d68efded81ea6f3548c60ea184127adc249076ad2e1b9",
+    "coverPage": 1
+  }
+]

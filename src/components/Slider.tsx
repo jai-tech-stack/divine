@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { LayoutChangeEvent, PanResponder, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -7,21 +7,19 @@ import { C, F } from '@/theme';
 /** Gold volume slider with a speaker icon and percentage, 0–100. */
 export function VolumeSlider({ value, onChange, label = 'ஒலி அளவு' }: { value: number; onChange: (v: number) => void; label?: string }) {
   const [w, setW] = useState(0);
-  const wRef = useRef(0);
-  const set = (x: number) => {
-    if (!wRef.current) return;
-    onChange(Math.round(Math.max(0, Math.min(1, x / wRef.current)) * 100));
-  };
-  const pan = useRef(
-    PanResponder.create({
+  const pan = useMemo(() => {
+    const set = (x: number) => {
+      if (!w) return;
+      onChange(Math.round(Math.max(0, Math.min(1, x / w)) * 100));
+    };
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (e) => set(e.nativeEvent.locationX),
       onPanResponderMove: (e) => set(e.nativeEvent.locationX),
-    }),
-  ).current;
+    });
+  }, [w, onChange]);
   const onLayout = (e: LayoutChangeEvent) => {
-    wRef.current = e.nativeEvent.layout.width;
     setW(e.nativeEvent.layout.width);
   };
   return (

@@ -1,6 +1,6 @@
 /**
  * Bhagavad Gita chapter guide — Tamil written for Divine Life (AI draft, awaiting review).
- * Sanskrit verse text: gita/gita dataset (Unlicense / public domain), see verses.json.
+ * Sanskrit verse text: traditional text, verified against Sanskrit Documents' bhagvadnew edition; see tools/gita-content.md.
  */
 export type GitaChapter = {
   n: number;

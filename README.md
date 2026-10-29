@@ -1,59 +1,83 @@
-# Divine Life — தெய்வீக வாழ்வு
+# Divine Life
 
-Tamil-first spiritual companion (Expo SDK 58 · React Native · TypeScript).
+தமிழில் ஆன்மிக வாசிப்பு, பாராயணம் மற்றும் தினசரி பயிற்சிக்கான Expo / React Native செயலி.
 
-## What works now
+## 1.0.3
 
-| Screen | What it does |
-|---|---|
-| முகப்பு (Home) | Live animated preview of today's story, Japa and Dhyanam shortcuts |
-| கதை (Story player) | 10 cinematic scenes: parallax painted layers, slow camera zoom/pan, god-rays, particles (embers, petals, sparks, stars), lightning/tremor/bloom, cross-fades. Tamil narration via the device's Tamil voice, subtitles synced to the voice (timed text when no voice). Tap left = back · centre = pause · right = next |
-| கற்றல் (after the story) | சுலோகம் (Devanagari + Tamil script, spoken) → பொருள் (word-by-word) → ஞானம் (4 notes) → செயல் (reflection + one voluntary practice that opens Dhyanam with 5 min) → கேள் (AI companion) |
-| பகவத் கீதை (`/gita`) | All 700 verses free, no locks (plus 13.0, Arjuna's question found in some editions). Own "சுவடி + உரையாடல்" design: home with the Krishna–Arjuna upadesam painting and a camera that follows the speaker, feelings → verse, 18 temple steps; each chapter as a dialogue thread (Krishna / Arjuna / Sanjaya bubbles with scene notes); each verse as a palm leaf (Tamil script / Sanskrit, chant-along line highlight), சொல் மாலை word beads, three lamps (பொருள் / விளக்கம் / வாழ்வில்), சிந்திக்க, இன்றைய செயல் commitment, ask the AI about this verse only. Own Tamil notes for every verse of all 18 chapters in `src/content/gita/notes/`. `tools/gita_fix.py` cleans speaker labels and line breaks in the verse data |
-| மந்திரங்கள் (`/mantras`) | 24 mantras/shlokas across 10 deities + common prayers. Today's mantra, deity circles, favourites. Reader: Tamil meaning under every line by default, Tamil/Sanskrit, font size, background, when to chant, chant-along with repeat 1/3/11/21 and counter, "ஜப மாலை" opens Japa with that mantra |
-| ஞான நூலகம் (`/library`) | நான்கு யோகங்கள், மூன்று குணங்கள், பதினெண் சித்தர்கள், பன்னிரு ஆழ்வார்கள், சைவ நால்வர் — expandable cards, listen, links into Gita verses and practices |
-| ஜப மாலை | 108 beads light up, current bead pulses, ripple + bell + haptic per count, gong and burst at 108, auto-count, 4 mantras, volume |
-| தியானம் | Lotus and rings breathe with the pattern (4-4-6 default), phase prompts with seconds, 5/10/15/20 min, looping tambura (Sa-Pa), gong at the end |
+- பகவத் கீதை: தேர்ந்தெடுத்த சம்ஸ்கிருதப் பதிப்பில் 18 அத்தியாயங்கள், 701 சுலோகங்கள். பதிப்புகளுக்கு இடையே மொத்த எண்ணிக்கையும் 13ஆம் அத்தியாய எண்ணிடலும் மாறலாம்; இந்தச் செயலியில் தொடக்கக் கேள்வி 13.0 எனக் காட்டப்படுகிறது.
+- 96 மந்திர / பாராயணப் பதிவுகள்; தேர்ந்தெடுத்த விநாயகர், சிவன், முருகன், திருமால், தேவியர், ஆழ்வார் படைப்புகள்; மூல இணைப்புகள் மற்றும் தனித்த தமிழ் விளக்கங்கள். இது அனைத்து சமய நூல்களின் முழுத் தொகுப்பு அல்ல.
+- தமிழ் உரையாடல்: கடவுளிடம் கேளுங்கள். அருள்நூல் சார்ந்த அன்பான வழிகாட்டுதல்; உருவாக்கப்பட்ட பதில்கள் இறைவனின் நேரடி வாக்கு அல்ல.
+- ஞான நூல்கள்: வழங்கப்பட்ட 10 நூல்களின் தேடக்கூடிய, நகலெடுக்கக்கூடிய உரை. எழுத்துணர்வுப் பிழைகள் இருக்கலாம்; பக்கங்களில் மெய்ப்புத் திருத்த நிலை காட்டப்படும்.
+- புராணச் சரிதங்கள்: ஒரு காட்சிச் சரிதம் மற்றும் வழங்கப்பட்ட சுருக்க நூலின் 17 புராணப் பகுதிகளுக்கான இணைப்புகள். 750 பக்க மூலப் பிரதியில் பிரம்மாண்ட புராணப் பகுதி இல்லை.
+- முகப்பில் கீதை, சரிதக் காட்சி, நூல் பக்கம் ஆகியவற்றைத் தொடரலாம். முன்னேற்றமும் ஜபப் பதிவுகளும் சாதனத்தில் சேமிக்கப்படும்; கணக்கு / cloud sync இன்னும் இல்லை.
+- கைபேசி அளவுகளுக்கேற்ற தமிழ் அமைப்பு, முழு தெய்வக் கட்டங்கள், தேர்வுக்கேற்ற முகப்புப் படம்.
 
-## Run it
+## இயக்குதல்
 
-```bash
-npm install
-npx expo start          # scan the QR code with Expo Go (SDK 58) on your phone
-npx expo start --web    # or in the browser
+Node.js மற்றும் npm தேவை. Expo SDK 58 பயன்படுத்தப்படுகிறது.
+
+```sh
+npm ci
+npx expo start
+npx expo lint
+npx tsc --noEmit
 ```
 
-For Tamil narration on Android: Settings → System → Languages → Text-to-speech → install Tamil (Google). On iPhone: Settings → Accessibility → Spoken Content → Voices → Tamil.
+குரல் அடையாளம் காணுதல் போன்ற native modules காரணமாக முழு வசதிகளுக்குச் சொந்த development / release build தேவை. Expo Go மட்டும் அனைத்தையும் ஆதரிக்காது. தமிழ்க் குரல் இல்லாவிட்டால் உரை காட்டப்படும்.
 
-## The AI companion (free tiers only)
+## சோதனைகள்
 
-The app never holds provider keys. `supabase/functions/wisdom` tries **Gemini → Groq → OpenRouter (free model)** and returns the first answer. Only the current question and story context are sent; old chats are never forwarded between providers.
-
-```bash
-supabase secrets set GEMINI_API_KEY=... GROQ_API_KEY=... OPENROUTER_API_KEY=...
-supabase functions deploy wisdom
-cp .env.example .env    # fill EXPO_PUBLIC_WISDOM_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
+```sh
+node tools/check-progress.mjs
+node tools/check-companion.mjs
+node tools/check-devotional.mjs
+node tools/check-ganesha.mjs
+node tools/check-shiva.mjs
+node tools/check-murugan.mjs
+node tools/check-gita.mjs
+node tools/check-books.mjs
 ```
 
-Without it, the three suggested questions return prepared answers (labelled as such).
+மூல ஒப்பீடு, பதிப்பு வேறுபாடுகள், உரை எண்ணிக்கைகள் மற்றும் நிலுவைப் பணிகள் `tools/*-content.md` மற்றும் `tools/content-requests.md` கோப்புகளில் உள்ளன.
 
-## Adding cinematic artwork
+## Android APK
 
-Each scene in `src/content/stories/prithu.ts` has an `imagePrompt`. Generate a 9:16 image with your image tool, save it under `assets/stories/prithu/`, and add `image: require('@/assets/stories/prithu/naimisha.jpg')` to that scene. The player gives that painting the same slow camera move, with particles and effects on top. Scenes without an image keep the drawn backdrop.
+`app.json` பதிப்பு 1.0.1, Android versionCode 2, package `com.anonymous.divinelife`.
 
-## Adding the next story
+பரிந்துரைக்கப்பட்ட cloud build:
 
-Copy `src/content/stories/prithu.ts`, change the scenes (pick any of the 10 backdrops or add art), verse, wisdom, reflection and practice, and add it to `src/content/index.ts`.
+```sh
+npx eas-cli@latest login
+npx eas-cli@latest build --platform android --profile preview
+```
 
-## Content sources
+ஏற்கெனவே நிறுவிய செயலியை update செய்ய அதே package மற்றும் signing key தேவை. தற்போதைய சோதனை APK பழைய APK-க்கு இணையான debug signing key-ஐப் பயன்படுத்துகிறது; இது Play Store production signing அல்ல. Key-கள் repository-ல் சேர்க்கப்படுவதில்லை. Cloud build-க்கு மாறும்போது பழைய signing credentials-ஐப் பாதுகாக்க வேண்டும்.
 
-- Story: retold in our own words from அ.ச. ஞானசம்பந்தன், ஞா. மீரா — *பதினெண் புராணங்கள்* (கங்கை புத்தக நிலையம்), பிரம்ம புராணம், pp. 10–13 (Tamil Virtual Academy e-library). The book is cited as a reference; no passage is copied.
-- Verse: Bhagavad Gita 2.63 (public domain). It is not from the Brahma Purana and the app says so.
-- Meanings and wisdom notes: AI drafts, labelled "awaiting review".
-- Sounds (bell, gong, tambura) are synthesised for this project — no third-party recordings.
+இந்த வெளியீட்டுக்கு உள்ளூர் build முயற்சி செய்யப்பட்டுள்ளது. Android SDK / JDK உடன்:
 
-## Gita and mantra sources
+```sh
+npx expo prebuild --platform android --no-install
+cd android
+./gradlew :app:assembleRelease
+```
 
-- Sanskrit Gita text: [gita/gita](https://github.com/gita/gita) dataset (public domain / Unlicense); Tamil script generated with indic-transliteration. Rebuild: `tools/gita_prep.py`.
-- All Tamil meanings, explanations, moments, library entries: written for Divine Life (AI draft, awaiting review). No translation from Bharathiyar or any other book is copied.
-- Mantra texts are traditional Sanskrit; benefits are described as tradition, never promised.
+APK-களும் generated Android / iOS கோப்புகளும் Git-ல் சேர்க்கப்படுவதில்லை; APK வெளியீட்டு asset ஆக வழங்கப்படும்.
+
+### Windows native build
+
+நீண்ட கோப்புப் பாதையால் பழைய Ninja கருவி தோல்வியடைந்தால், [அதிகாரப்பூர்வ Ninja 1.13.2](https://github.com/ninja-build/ninja/releases/tag/v1.13.2) Windows binary-ஐப் பயன்படுத்தலாம். SDK கருவிகளை மாற்றாமல், தனியாகப் பிரித்தெடுத்த `ninja.exe` பாதையை அமைக்கவும். `JAVA_HOME`, `ANDROID_HOME` அமைந்திருக்க வேண்டும். Project root-லிருந்து:
+
+```powershell
+$env:DIVINE_NINJA_EXE = (Resolve-Path .expo/ninja-runtime/ninja.exe).Path
+.\android\gradlew.bat -p android :app:assembleRelease --init-script ../tools/windows-cmake.gradle --console=plain --max-workers=2
+```
+
+Init script தற்காலிக native object பாதைகளைக் குறைத்து, compiler concurrency-ஐ வரையறுக்கும்; செயலியின் signing அல்லது package பெயரை மாற்றாது.
+
+## உரையாடல் சேவை
+
+`.env.example`-ஐ அடிப்படையாகக் கொண்டு `EXPO_PUBLIC_WISDOM_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY` அமைக்கவும். Provider ரகசியங்கள் செயலியில் சேர்க்கப்படாது. `supabase/functions/wisdom` சேவையைத் தனியாக deploy செய்ய வேண்டும்; APK உருவாக்குவது அதை deploy செய்யாது. சேவை இல்லாதபோது சாதனத்தில் உள்ள தமிழ் வழிகாட்டுதல் பயன்படுத்தப்படும்.
+
+## உள்ளடக்க ஆதாரங்கள்
+
+பண்டைய பாடல்களின் மூல இணைப்புகள் ஒவ்வொரு பதிவிலும் உள்ளன; தமிழ் பொருள்கள் செயலிக்கான எளிய விளக்கங்கள். ஆசிரியர் attribution மரபுவழியான இடங்களில் அவ்வாறே குறிப்பிடப்பட்டுள்ளது. பயனர் வழங்கிய நூல்களின் ஆசிரியர் மற்றும் பதிப்புரிமைகள் அந்தந்த உரிமையாளர்களுக்கே உரியவை; repository-ன் software license அவற்றுக்கு உரிமம் வழங்குவதில்லை. மருத்துவ அல்லது அதிசய பலன்கள் உறுதியாகக் கூறப்படுவதில்லை.

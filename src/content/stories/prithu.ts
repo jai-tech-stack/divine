@@ -1,25 +1,27 @@
+import { ART } from '@/content/artwork';
 import type { Story } from '../types';
 
 /**
  * Retold in our own words from:
  * அ.ச. ஞானசம்பந்தன், ஞா. மீரா — "பதினெண் புராணங்கள்" (கங்கை புத்தக நிலையம்),
- * 1. பிரம்ம புராணம், பக்கம் 10–13 (Tamil Virtual Academy e-library scan, PDF pp. 38–41).
+ * 1. பிரம்ம புராணம், பக்கம் 10–13 (Tamil Virtual Academy e-library scan, PDF pp. 39–42).
  * The book is cited as the reference; no passage is copied verbatim.
  */
 export const prithu: Story = {
   id: 'prithu',
+  sourceReviewed: true,
   title: 'பிருதுவும் பூமித்தாயும்',
   subtitle: 'சினம் செயலாக மாறிய கதை',
   purana: 'பிரம்ம புராணம்',
   source:
-    'மூலம்: அ.ச. ஞானசம்பந்தன், ஞா. மீரா, "பதினெண் புராணங்கள்", கங்கை புத்தக நிலையம் — பிரம்ம புராணம், பக். 10–13. இங்கு உள்ளது சுருக்கமான மறுகூறல்.',
+    'மூலம்: அ.ச. ஞானசம்பந்தன், ஞா. மீரா, "பதினெண் புராணங்கள்", கங்கை புத்தக நிலையம் — பிரம்ம புராணம், அச்சுப் பக். 10–13 (PDF பக். 39–42) உடன் ஒப்பிடப்பட்டது. இங்கு உள்ளது சுருக்கமான மறுகூறல்; காட்சிப் படங்கள் கலைக் கற்பனை.',
   minutes: 4,
   scenes: [
     {
       id: 'naimisha',
       title: 'நைமிசாரண்யம்',
       backdrop: 'forest-dawn',
-      image: require('@/assets/story/naimisha.jpg'),
+      image: ART['story/naimisha'],
       imageAspect: 1.5,
       focus: [0.55, 0.2],
       particles: 'dust',
@@ -37,7 +39,7 @@ export const prithu: Story = {
       id: 'vena',
       title: 'வேனனின் அகங்காரம்',
       backdrop: 'palace-storm',
-      image: require('@/assets/story/vena.jpg'),
+      image: ART['story/vena'],
       imageAspect: 1.5,
       focus: [0.3, 0.5],
       particles: 'embers',
@@ -55,7 +57,7 @@ export const prithu: Story = {
       id: 'birth',
       title: 'ஒளியில் பிறந்த பிருது',
       backdrop: 'divine-birth',
-      image: require('@/assets/story/birth.jpg'),
+      image: ART['story/birth'],
       imageAspect: 1.5,
       focus: [0.45, 0.55],
       particles: 'sparks',
@@ -72,7 +74,7 @@ export const prithu: Story = {
       id: 'crown',
       title: 'முடிசூட்டு',
       backdrop: 'coronation',
-      image: require('@/assets/story/crown.jpg'),
+      image: ART['story/crown'],
       imageAspect: 1.0,
       focus: [0.5, 0.5],
       particles: 'petals',
@@ -90,7 +92,7 @@ export const prithu: Story = {
       id: 'famine',
       title: 'பசியின் குரல்',
       backdrop: 'famine',
-      image: require('@/assets/story/famine.jpg'),
+      image: ART['story/famine'],
       imageAspect: 1.5,
       focus: [0.1, 0.6],
       particles: 'dust',
@@ -106,7 +108,7 @@ export const prithu: Story = {
       id: 'wrath',
       title: 'சினம்',
       backdrop: 'wrath',
-      image: require('@/assets/story/wrath.jpg'),
+      image: ART['story/wrath'],
       imageAspect: 1.5,
       focus: [0.2, 0.0],
       particles: 'embers',
@@ -123,7 +125,7 @@ export const prithu: Story = {
       id: 'chase',
       title: 'ஓடும் பூமி',
       backdrop: 'cosmic-chase',
-      image: require('@/assets/story/chase.jpg'),
+      image: ART['story/chase'],
       imageAspect: 1.5,
       focus: [0.75, 0.35],
       particles: 'stars',
@@ -140,7 +142,7 @@ export const prithu: Story = {
       id: 'speaks',
       title: 'பூமியின் வேண்டுகோள்',
       backdrop: 'earth-speaks',
-      image: require('@/assets/story/speaks.jpg'),
+      image: ART['story/speaks'],
       imageAspect: 1.5,
       focus: [0.25, 0.7],
       particles: 'dust',
@@ -157,7 +159,7 @@ export const prithu: Story = {
       id: 'level',
       title: 'சினம் செயலாகிறது',
       backdrop: 'levelling',
-      image: require('@/assets/story/level.jpg'),
+      image: ART['story/level'],
       imageAspect: 1.5,
       focus: [0.9, 0.2],
       particles: 'dust',

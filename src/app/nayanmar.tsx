@@ -1,4 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
+import { ART } from '@/content/artwork';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -6,31 +7,33 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NAYANMARS } from '@/content/nayanmars';
+import { getStory } from '@/content';
 import { C, F } from '@/theme';
 
 /** The sixty-three, in the order of Sekkizhar's Periya Puranam. Ready stories open as cinematic tales. */
 export default function Nayanmar() {
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState<number | null>(null);
-  const ready = NAYANMARS.filter((x) => x.story);
+  const ready = NAYANMARS.filter((x) => x.story && getStory(x.story)?.sourceReviewed);
+  const isReady = (id?: string) => !!id && !!getStory(id)?.sourceReviewed;
   return (
     <View style={{ flex: 1, backgroundColor: C.night }}>
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}>
         <View style={st.hero}>
-          <Image source={require('@/assets/story/loka-kailasam.jpg')} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
+          <Image source={ART['story/loka-kailasam']} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
           <LinearGradient colors={['rgba(7,11,20,0.5)', 'transparent', C.night]} locations={[0, 0.35, 1]} style={StyleSheet.absoluteFill} />
           <Pressable accessibilityRole="button" accessibilityLabel="பின்செல்" onPress={() => router.back()} style={[st.back, { top: insets.top + 6 }]}>
             <Ionicons name="arrow-back" size={22} color={C.cream} />
           </Pressable>
           <View style={st.heroText}>
             <Text style={st.kicker}>பெரிய புராணம் · சேக்கிழார்</Text>
-            <Text style={st.title}>அறுபத்து மூன்று நாயன்மார்</Text>
-            <Text style={st.sub}>எப்படி வாழ்ந்தார்கள் · எப்படி வழிபட்டார்கள் · என்ன ஒழுக்கம்</Text>
+            <Text style={st.title}>நாயன்மார் திருச்சரிதம்</Text>
+            <Text style={st.sub}>அறுபத்து மூவர் அருள்வாழ்வும் தொண்டுநெறியும்</Text>
           </View>
         </View>
 
         <View style={{ paddingHorizontal: 16, gap: 12 }}>
-          <Text style={st.h}>முழுக் கதைகள் · {ready.length} / 63</Text>
+          <Text style={st.h}>திருச்சரிதங்கள் · {ready.length} / 63</Text>
           {ready.map((x) => (
             <Pressable key={x.n} accessibilityRole="button" onPress={() => router.push(`/stories/${x.story}` as never)} style={({ pressed }) => [st.ready, pressed && { opacity: 0.88 }]}>
               <View style={st.num}>
@@ -44,25 +47,25 @@ export default function Nayanmar() {
             </Pressable>
           ))}
 
-          <Text style={[st.h, { marginTop: 10 }]}>அனைவரும்</Text>
+          <Text style={[st.h, { marginTop: 10 }]}>அறுபத்து மூவர் திருநாமங்கள்</Text>
           <View style={st.list}>
             {NAYANMARS.map((x, i) => (
               <Pressable
                 key={x.n}
                 accessibilityRole="button"
-                onPress={() => (x.story ? router.push(`/stories/${x.story}` as never) : setOpen(open === x.n ? null : x.n))}
+                onPress={() => (isReady(x.story) ? router.push(`/stories/${x.story}` as never) : setOpen(open === x.n ? null : x.n))}
                 style={[st.row, i > 0 && { borderTopWidth: 1, borderTopColor: 'rgba(227,184,101,0.14)' }]}>
                 <Text style={st.rn}>{x.n}</Text>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={st.rt}>{x.ta}</Text>
-                  {(open === x.n || x.story) && <Text style={st.rs}>{x.place ? `${x.place} · ` : ''}{x.theme}</Text>}
-                  {open === x.n && <Text style={st.soon}>முழுக் கதை விரைவில் சேர்க்கப்படும்.</Text>}
+                  {isReady(x.story) && <Text style={st.rs}>{x.place ? `${x.place} · ` : ''}{x.theme}</Text>}
+                  {open === x.n && !isReady(x.story) && <Text style={st.soon}>இந்தத் திருச்சரிதத்தை மூலத்துடன் ஒப்பிட்டு விரிவாக எழுதும் பணி நிலுவையில் உள்ளது. முழுக் கதை என்று சரிபார்க்காமல் காட்டமாட்டோம்.</Text>}
                 </View>
-                {x.story ? <Ionicons name="play-circle-outline" size={22} color={C.gold} /> : <Ionicons name={open === x.n ? 'chevron-up' : 'chevron-down'} size={18} color={C.muted} />}
+                {isReady(x.story) ? <Ionicons name="play-circle-outline" size={22} color={C.gold} /> : <Ionicons name={open === x.n ? 'chevron-up' : 'chevron-down'} size={18} color={C.muted} />}
               </Pressable>
             ))}
           </View>
-          <Text style={st.note}>பெயர்கள், வரிசை: சேக்கிழாரின் பெரிய புராணம். கதைகள் Divine Life-இன் சொந்த மறுகூறல்; நிகழ்வுகள் மரபுப்படி.</Text>
+          <Text style={st.note}>63 நாயன்மார் திருநாமங்களிலிருந்து, பக்க ஆதாரத்துடன் ஒப்பிட்ட ஒரு காட்சிக் கதை மட்டும் இப்போது தயாராக உள்ளது. மீதிக் கதைகள் மூலத்துடன் சரிபார்க்கும் வரை முழுக் கதைகளாகக் காட்டப்படவில்லை.</Text>
         </View>
       </ScrollView>
     </View>
@@ -87,6 +90,6 @@ const st = StyleSheet.create({
   rn: { width: 28, fontFamily: F.num, fontSize: 17, color: C.gold },
   rt: { fontFamily: F.taSemi, fontSize: 15, color: C.cream },
   rs: { fontFamily: F.ta, fontSize: 12.5, lineHeight: 20, color: C.muted },
-  soon: { fontFamily: F.taSemi, fontSize: 12, color: C.goldLight },
+  soon: { fontFamily: F.ta, fontSize: 12, lineHeight: 22, color: C.goldLight },
   note: { fontFamily: F.ta, fontSize: 11, lineHeight: 18, color: 'rgba(201,187,155,0.75)' },
 });

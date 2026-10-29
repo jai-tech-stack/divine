@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from 'react';
  */
 let M: any = null;
 try {
+  // Optional native module must be loaded defensively for Expo Go.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   M = require('expo-speech-recognition');
 } catch {
   M = null;
@@ -21,7 +23,9 @@ export function useListen(lang: string, onFinal: (text: string) => void) {
   const [error, setError] = useState<string | null>(null);
   const got = useRef('');
   const cb = useRef(onFinal);
-  cb.current = onFinal;
+  useEffect(() => {
+    cb.current = onFinal;
+  }, [onFinal]);
 
   useEv('start', () => {
     got.current = '';

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Image, LayoutChangeEvent, Platform, StyleSheet, View } from 'react-native';
 
 import { SCENES } from '@/content/deities';
@@ -22,10 +22,10 @@ const SCALE: Record<Focus, number> = { krishna: 1.45, arjuna: 1.75, hand: 1.6, w
  */
 export function UpadesamStage({ focus, variant = 'upadesam', dim = 0, glow = true }: { focus: Focus; variant?: keyof typeof ART; dim?: number; glow?: boolean }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
-  const tx = useRef(new Animated.Value(0)).current;
-  const ty = useRef(new Animated.Value(0)).current;
-  const sc = useRef(new Animated.Value(1.1)).current;
-  const pulse = useRef(new Animated.Value(0)).current;
+  const [tx] = useState(() => new Animated.Value(0));
+  const [ty] = useState(() => new Animated.Value(0));
+  const [sc] = useState(() => new Animated.Value(1.1));
+  const [pulse] = useState(() => new Animated.Value(0));
   const art = ART[variant];
   const L = Math.max(box.w, box.h);
 

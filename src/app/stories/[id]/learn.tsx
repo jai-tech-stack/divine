@@ -1,6 +1,6 @@
 import * as Speech from 'expo-speech';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -26,7 +26,13 @@ export default function Learn() {
     };
   }, [step]);
 
-  if (!story) return null;
+  if (!story) return (
+    <View style={[st.fill, { paddingTop: insets.top, paddingHorizontal: 24, justifyContent: 'center', gap: 14 }]}>
+      <Text style={[st.hTitle, { textAlign: 'center' }]}>இந்தச் சரிதத்தின் பாடமும் பொருளும் இன்னும் சரிபார்க்கப்படவில்லை</Text>
+      <Text style={[st.hSub, { textAlign: 'center' }]}>மூலத்துடன் ஒப்பிடாத விளக்கத்தையோ பாடத்தையோ முழுமையானது என்று காட்டமாட்டோம்.</Text>
+      <GoldButton label="தயாரான திருச்சரிதத்திற்குச் செல்லுங்கள்" icon={Icons.arrow(C.ink)} onPress={() => router.replace('/nayanmar')} />
+    </View>
+  );
   const last = step === STEPS.length - 1;
 
   return (
@@ -75,7 +81,7 @@ export default function Learn() {
 }
 
 function Reveal({ children }: { children: React.ReactNode }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: 520, easing: Easing.out(Easing.cubic), useNativeDriver: native }).start();
   }, [v]);
@@ -86,7 +92,7 @@ type StepProps = { story: NonNullable<ReturnType<typeof getStory>> };
 
 function VerseStep({ story }: StepProps) {
   const [speaking, setSpeaking] = useState(false);
-  const glow = useRef(new Animated.Value(0)).current;
+  const [glow] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -132,6 +138,7 @@ function VerseStep({ story }: StepProps) {
 }
 
 function MeaningStep({ story }: StepProps) {
+  const takeaway = story.wisdom.find((item) => item.heading === 'நமக்கான பாடம்')?.body ?? story.verse.note;
   return (
     <View style={{ gap: 16 }}>
       <Badge text="Divine Life உரை" tone="muted" />
@@ -145,8 +152,8 @@ function MeaningStep({ story }: StepProps) {
       </View>
       <Text style={st.sectionH}>முழுப் பொருள்</Text>
       <T style={{ fontSize: 17, lineHeight: 31 }}>{story.verse.meaning}</T>
-      <Text style={st.sectionH}>கதையோடு இணைப்பு</Text>
-      <T>பிருதுவின் சினம் "பூமியைப் பிளப்பேன்" என்ற மயக்கத்துக்குக் கொண்டு சென்றது — அதுவே சுலோகத்தின் முதல் படி. பூமி பேசியபோது அவன் நின்றான்; நினைவும் பகுத்தறிவும் திரும்பின; அழிவு தவிர்க்கப்பட்டது.</T>
+      <Text style={st.sectionH}>சரிதம் உணர்த்தும் நெறி</Text>
+      <T>{takeaway}</T>
     </View>
   );
 }
@@ -168,7 +175,7 @@ function WisdomStep({ story }: StepProps) {
 }
 
 function Stagger({ i, children }: { i: number; children: React.ReactNode }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(v, { toValue: 1, duration: 500, delay: 160 * i, easing: Easing.out(Easing.cubic), useNativeDriver: native }).start();
   }, [v, i]);
@@ -177,11 +184,12 @@ function Stagger({ i, children }: { i: number; children: React.ReactNode }) {
 
 function YouStep({ story }: StepProps) {
   const [pick, setPick] = useState<number | null>(null);
+  const takeaway = story.wisdom.find((item) => item.heading === 'நமக்கான பாடம்')?.body ?? story.verse.note;
   const replies = [
-    'அது மிகவும் இயல்பானது — பிருதுவும் முதலில் வில்லைத்தான் எடுத்தான். அடுத்த முறை, பேசும் முன் ஒரு மூச்சு இடைவெளி.',
-    'விலகிச் செல்வது சில நேரம் புத்திசாலித்தனம். பின்பு திரும்பி வந்து "கேட்பது" தான் அடுத்த படி.',
-    'அதுவே கதையின் திருப்புமுனை. அந்தக் கணத்தில் உதவியது எது என்று கவனியுங்கள் — அதைப் பழக்கமாக்கலாம்.',
-    'பரவாயில்லை. அடுத்த முறை சினம் வரும் போது, உடலில் அது எங்கே உணரப்படுகிறது என்பதை மட்டும் கவனியுங்கள்.',
+    `உங்கள் பதிலைப் பகிர்ந்ததற்கு நன்றி. ${takeaway}`,
+    `உங்கள் எண்ணத்தை மதிக்கிறோம். ${takeaway}`,
+    `இந்தக் கோணமும் சிந்திக்கத்தக்கது. ${takeaway}`,
+    `ஒவ்வொருவரின் அனுபவமும் வேறுபடும். ${takeaway}`,
   ];
   return (
     <View style={{ gap: 16 }}>
@@ -236,7 +244,7 @@ function AskStep({ story }: StepProps) {
     <View style={{ gap: 16 }}>
       <View style={st.panel}>
         <T style={st.small}>
-          இது ஒரு AI ஞானத் துணை — தெய்வமோ குருவோ அல்ல. கதை, சுலோகம், ஞானக் குறிப்புகளின் அடிப்படையில் மட்டும் பதில் தரும். மருத்துவ அல்லது அவசர நிலைகளில் நம்பிக்கையான மனிதரை அணுகுங்கள்.
+          சரிதம், சுலோகம் மற்றும் ஞானக் குறிப்புகளின் அடிப்படையிலான ஆன்மிக உரையாடல். உங்கள் மனதில் இருப்பதைப் பகிருங்கள்.
         </T>
         {!aiConfigured() && <Badge text="ஆஃப்லைன் · தயாரிக்கப்பட்ட பதில்கள்" tone="muted" />}
       </View>
@@ -256,7 +264,6 @@ function AskStep({ story }: StepProps) {
             <View style={st.aBubble}>
               <T>{m.a.text}</T>
               {!!m.a.followUp && <T style={{ color: C.goldLight, marginTop: 8 }}>{m.a.followUp}</T>}
-              <Text style={st.srcTag}>{m.a.source === 'offline' ? 'தயாரிக்கப்பட்ட பதில்' : `AI · ${m.a.source}`}</Text>
             </View>
           </View>
         </Reveal>

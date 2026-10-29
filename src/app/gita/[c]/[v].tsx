@@ -1,17 +1,17 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Animated, Easing, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { dialogueLine, focusForSpeaker, UpadesamStage } from '@/components/gita/UpadesamStage';
-import { bodyFont, ReaderSettings, SCRIPT_LABEL, Segment, usePalette, verseFont } from '@/components/reader/ReaderKit';
-import { chapterVerses, getEn, getNote, getVerse, GITA_CHAPTERS, momentFor, speakerFor } from '@/content/gita';
+import { bodyFont, ReaderSettings, usePalette, verseFont } from '@/components/reader/ReaderKit';
+import { chapterVerses, getEn, getNote, getVerse, momentFor, speakerFor } from '@/content/gita';
 import { chantAlong } from '@/lib/chant';
+import { localDateKey } from '@/lib/date';
 import { prepareNarrator } from '@/lib/narrator';
-import { setPrefs } from '@/lib/prefs';
 import { progress, useProgress } from '@/lib/progress';
 import { F } from '@/theme';
 
@@ -19,6 +19,10 @@ const native = Platform.OS !== 'web';
 const SECOND: Record<'ta' | 'sa' | 'en', 'ta' | 'sa' | 'en'> = { ta: 'en', sa: 'ta', en: 'ta' };
 type Step = 'scene' | 'verse' | 'wisdom' | 'done';
 type Tab = 'e' | 'l' | 'q';
+
+function Page({ height, children, style }: { height: number; children: React.ReactNode; style?: object }) {
+  return <View style={{ height }}><ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false} contentContainerStyle={[{ flexGrow: 1, width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: 22, paddingTop: 24, paddingBottom: 56 }, style]}>{children}</ScrollView></View>;
+}
 
 /**
  * One verse as a guided flow — swipe up through: this moment → the verse (karaoke + word chips)
@@ -31,7 +35,6 @@ export default function GitaVerse() {
   const v = Number.isFinite(parsedV) ? parsedV : 1;
   const verse = getVerse(c, v);
   const note = getNote(c, v);
-  const ch = GITA_CHAPTERS[c - 1];
   const list = chapterVerses(c);
   const idx = list.findIndex((x) => x.v === v);
   const prevHref = idx > 0 ? `/gita/${c}/${list[idx - 1].v}` : c > 1 ? `/gita/${c - 1}/${chapterVerses(c - 1).slice(-1)[0].v}` : null;
@@ -47,7 +50,7 @@ export default function GitaVerse() {
   const en = prefs.meaning === 'en' ? getEn(c, v) : undefined;
   const meaning = en?.m ?? note?.m ?? '';
   const saved = p.gitaSaved.includes(`${c}.${v}`);
-  const committed = p.commitments.some((x) => x.key === `${c}.${v}` && x.date === new Date().toISOString().slice(0, 10));
+  const committed = p.commitments.some((x) => x.key === `${c}.${v}` && x.date === localDateKey());
 
   const [h, setH] = useState(0);
   const [page, setPage] = useState(0);
@@ -56,10 +59,11 @@ export default function GitaVerse() {
   const [word, setWord] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>('e');
   const [settings, setSettings] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
   const [flow, setFlow] = useState(params.flow === '1');
   const scroll = useRef<any>(null);
   const chant = useRef<{ cancel: () => void } | null>(null);
-  const hint = useRef(new Animated.Value(0)).current;
+  const [hint] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     prepareNarrator();
@@ -108,7 +112,7 @@ export default function GitaVerse() {
     setPlaying(null);
     setLine(-1);
   };
-  const goPage = (i: number) => {
+  function goPage(i: number) {
     if (!h) return;
     const k = Math.max(0, Math.min(steps.length - 1, i));
     scroll.current?.scrollTo({ y: k * h, animated: true });
@@ -128,19 +132,11 @@ export default function GitaVerse() {
       onError: () => setPlaying(null),
     });
   };
-  const playVerse = () => {
+  function playVerse() {
+    if (!verse) return;
     if (playing) return stopAll();
     progress.markRead(c, v);
-    setPlaying('verse');
-    chant.current = chantAlong(verse.ta.split('\n').filter(Boolean), {
-      rate: 0.8,
-      onLine: setLine,
-      onDone: () => {
-        chant.current = null;
-        if (!meaning) return setPlaying(null);
-        speak(meaning, 'meaning', () => flow && setTimeout(() => goPage(steps.indexOf('wisdom')), 900));
-      },
-    });
+    speak(`${dialogueLine(speaker)}. ${meaning}`, 'meaning', () => flow && setTimeout(() => goPage(steps.indexOf('wisdom')), 900));
   };
   const startFlow = () => {
     setFlow(true);
@@ -154,8 +150,6 @@ export default function GitaVerse() {
   };
   const tabText = (t: Tab) => (t === 'e' ? (en?.e ?? note?.e ?? '') : t === 'l' ? (en?.l ?? note?.l ?? '') : (note?.q ?? 'இந்தச் சுலோகத்தின் எந்தச் சொல் இன்று உங்களுக்குப் பொருந்துகிறது? ஒரு நிமிடம் அமைதியாக நினைத்துப் பாருங்கள்.'));
   const share = () => Share.share({ message: `${main.join('\n')}\n\n${meaning}\n\nபகவத் கீதை ${c}.${v} · Divine Life` }).catch(() => {});
-
-  const Page = ({ children, style }: { children: React.ReactNode; style?: object }) => <View style={[{ height: h, paddingHorizontal: 18 }, style]}>{children}</View>;
 
   return (
     <View style={{ flex: 1, backgroundColor: pal.bg }}>
@@ -195,7 +189,7 @@ export default function GitaVerse() {
             {steps.map((s) => {
               if (s === 'scene')
                 return (
-                  <Page key={s} style={{ justifyContent: 'flex-end', paddingBottom: 70 }}>
+                  <Page height={h} key={s} style={{ justifyContent: 'flex-end', paddingBottom: 70 }}>
                     <View style={[st.sceneCard]}>
                       <UpadesamStage focus={focusForSpeaker(speaker)} variant={c === 11 ? 'vishwaroopa' : 'upadesam'} />
                       <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.92)']} locations={[0.3, 1]} style={StyleSheet.absoluteFill} />
@@ -211,18 +205,28 @@ export default function GitaVerse() {
 
               if (s === 'verse')
                 return (
-                  <Page key={s} style={{ justifyContent: 'center', gap: 12 }}>
+                  <Page height={h} key={s} style={{ justifyContent: 'center', gap: 18 }}>
                     <View style={[st.chip, { backgroundColor: pal.accent }]}>
                       <Ionicons name="chatbubble-ellipses" size={12} color="#fff" />
                       <Text style={st.chipT}>{dialogueLine(speaker)}</Text>
                     </View>
-                    <View style={{ gap: 2 }}>
+                    <Text selectable style={[bodyFont('ta', prefs.fontScale, 19), { color: playing === 'meaning' ? pal.accent : pal.ink, textAlign: 'left' }]}>{meaning}</Text>
+                    <Text style={{ fontFamily: F.ta, fontSize: 12, lineHeight: 21, color: pal.sub }}>சுலோகத்தின் எளிய தமிழ் பொருள்</Text>
+                    <Pressable accessibilityRole="button" accessibilityState={{ expanded: showOriginal }} onPress={() => setShowOriginal(!showOriginal)} style={[st.originalToggle, { borderColor: pal.line, backgroundColor: pal.card }]}>
+                      <Text style={{ fontFamily: F.taSemi, fontSize: 13, color: pal.accent }}>{showOriginal ? 'மூலச் சுலோகத்தை மறை' : 'மூலச் சுலோகம் · தமிழ் உச்சரிப்பு'}</Text>
+                      <Ionicons name={showOriginal ? 'chevron-up' : 'chevron-down'} size={16} color={pal.accent} />
+                    </Pressable>
+                    {showOriginal && <View style={{ gap: 8 }}>
                       {main.map((ln, i) => (
-                        <Text key={i} style={[verseFont(prefs.script, prefs.fontScale, 21), st.center, { color: line === i ? pal.accent : line >= 0 ? pal.sub : pal.verse }, line === i && st.glow]}>
+                        <Text selectable key={i} style={[verseFont('ta', prefs.fontScale, 18), { textAlign: 'left', color: line === i ? pal.accent : line >= 0 ? pal.sub : pal.verse }, line === i && st.glow]}>
                           {ln}
                         </Text>
                       ))}
-                    </View>
+                      <Pressable accessibilityRole="button" onPress={() => { if (playing) return stopAll(); setPlaying('verse'); chant.current = chantAlong(main, { rate: 0.8, onLine: setLine, onDone: () => { chant.current = null; setPlaying(null); setLine(-1); } }); }} style={st.listen}>
+                        <Ionicons name={playing === 'verse' ? 'pause-circle' : 'play-circle'} size={26} color={pal.accent} />
+                        <Text style={[st.listenT, { color: pal.accent }]}>மூலச் சுலோகம் கேளுங்கள்</Text>
+                      </Pressable>
+                    </View>}
                     {second.length > 0 && (
                       <View>
                         {second.map((ln, i) => (
@@ -233,7 +237,7 @@ export default function GitaVerse() {
                       </View>
                     )}
                     {/* word chips */}
-                    {note && note.w.length > 0 && (
+                    {showOriginal && note && note.w.length > 0 && (
                       <View style={{ gap: 8 }}>
                         <View style={st.chips}>
                           {note.w.map(([w], i) => (
@@ -247,7 +251,6 @@ export default function GitaVerse() {
                         </Text>
                       </View>
                     )}
-                    <Text style={[bodyFont(en ? 'en' : 'ta', prefs.fontScale, 16), st.center, { color: playing === 'meaning' ? pal.accent : pal.ink }]}>{meaning}</Text>
                     <View style={st.row}>
                       <Pressable accessibilityRole="button" onPress={playVerse} style={[st.big, { backgroundColor: pal.accent }]}>
                         <Ionicons name={playing === 'verse' || playing === 'meaning' ? 'pause' : 'play'} size={18} color="#fff" />
@@ -258,15 +261,12 @@ export default function GitaVerse() {
                         <Text style={[st.bigT, { color: pal.accent }]}>{flow ? 'தொடர் வாசிப்பு ஆன்' : 'தொடர்ந்து கேளுங்கள்'}</Text>
                       </Pressable>
                     </View>
-                    <View style={{ alignItems: 'center' }}>
-                      <Segment pal={pal} value={prefs.script} onChange={(script) => setPrefs({ script })} options={(['ta', 'sa', 'en'] as const).map((id) => ({ id, label: SCRIPT_LABEL[id] }))} />
-                    </View>
                   </Page>
                 );
 
               if (s === 'wisdom')
                 return (
-                  <Page key={s} style={{ justifyContent: 'center', gap: 14 }}>
+                  <Page height={h} key={s} style={{ justifyContent: 'center', gap: 18 }}>
                     <Text style={[st.h1, { color: pal.ink }]}>ஞானம்</Text>
                     <View style={st.tabs}>
                       {(
@@ -283,7 +283,7 @@ export default function GitaVerse() {
                       ))}
                     </View>
                     <View style={[st.card, { backgroundColor: pal.card, borderColor: pal.line }]}>
-                      <Text style={[bodyFont(en && tab !== 'q' && (tab === 'e' ? en.e : en.l) ? 'en' : 'ta', prefs.fontScale, 15.5), { color: pal.ink }]}>{tabText(tab)}</Text>
+                      <Text selectable style={[bodyFont('ta', prefs.fontScale, 18), { color: pal.ink, textAlign: 'left' }]}>{tabText(tab)}</Text>
                       <View style={st.row}>
                         <Pressable accessibilityRole="button" onPress={() => (playing === tab ? stopAll() : speak(tabText(tab), tab, () => flow && tab === 'e' && setTimeout(() => goPage(steps.indexOf('done')), 800)))} style={st.listen}>
                           <Ionicons name={playing === tab ? 'pause-circle' : 'play-circle'} size={28} color={pal.accent} />
@@ -299,14 +299,14 @@ export default function GitaVerse() {
                     </View>
                     <Pressable accessibilityRole="button" onPress={() => router.push('/companion')} style={[st.ask, { backgroundColor: pal.card, borderColor: pal.line }]}>
                       <Ionicons name="chatbubbles-outline" size={18} color={pal.accent} />
-                      <Text style={[st.askT, { color: pal.ink }]}>இதைப் பற்றித் துணையிடம் கேளுங்கள்</Text>
+                      <Text style={[st.askT, { color: pal.ink }]}>கடவுளிடம் கேளுங்கள்</Text>
                       <Ionicons name="chevron-forward" size={16} color={pal.sub} />
                     </Pressable>
                   </Page>
                 );
 
               return (
-                <Page key={s} style={{ justifyContent: 'center', gap: 16 }}>
+                <Page height={h} key={s} style={{ justifyContent: 'center', gap: 16 }}>
                   <View style={[st.shareCard, { borderColor: pal.line }]}>
                     <View style={st.shareArt}>
                       <UpadesamStage focus="wide" variant={c === 11 ? 'vishwaroopa' : 'upadesam'} glow={false} />
@@ -318,7 +318,7 @@ export default function GitaVerse() {
                       <Text style={[bodyFont(en ? 'en' : 'ta', 0.92, 15), { color: '#F3E6C8' }]} numberOfLines={5}>
                         {meaning}
                       </Text>
-                      <Text style={st.brand}>BHAGAVAD GITA {c}.{v} · DIVINE LIFE</Text>
+                      <Text style={st.brand}>பகவத் கீதை {c}.{v}</Text>
                     </View>
                   </View>
                   <View style={st.row}>
@@ -383,8 +383,9 @@ const st = StyleSheet.create({
   sceneBadge: { alignSelf: 'flex-start', backgroundColor: '#F3D48F', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   sceneBadgeT: { fontFamily: F.taBold, fontSize: 12, color: '#2B1D0E' },
   sceneBig: { fontFamily: F.taBold, fontSize: 22, lineHeight: 34, color: '#FFF6E2' },
-  chip: { alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  chipT: { fontFamily: F.taSemi, fontSize: 12, color: '#fff' },
+  chip: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8 },
+  chipT: { fontFamily: F.taSemi, fontSize: 14, lineHeight: 24, color: '#fff', flexShrink: 1 },
+  originalToggle: { borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   center: { textAlign: 'center' },
   glow: { textShadowColor: 'rgba(227,150,40,0.45)', textShadowRadius: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6 },
@@ -392,12 +393,12 @@ const st = StyleSheet.create({
   wordT: { fontFamily: F.taSemi, fontSize: 12.5 },
   wordMean: { fontFamily: F.taSemi, fontSize: 13.5, textAlign: 'center', minHeight: 20 },
   row: { flexDirection: 'row', gap: 10, alignItems: 'center' },
-  big: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48, borderRadius: 16 },
+  big: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 48, borderRadius: 16, paddingHorizontal: 10, paddingVertical: 10 },
   bigT: { fontFamily: F.taBold, fontSize: 14, color: '#fff' },
   h1: { fontFamily: F.taBold, fontSize: 26, textAlign: 'left' },
-  tabs: { flexDirection: 'row', gap: 8 },
+  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tab: { flex: 1, alignItems: 'center', gap: 4, borderRadius: 14, borderWidth: 1.5, paddingVertical: 10 },
-  tabT: { fontFamily: F.taSemi, fontSize: 12, textAlign: 'center' },
+  tabT: { fontFamily: F.taSemi, fontSize: 13, lineHeight: 23, textAlign: 'center', flexShrink: 1 },
   card: { borderRadius: 20, borderWidth: 1, padding: 16, gap: 14 },
   listen: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   listenT: { fontFamily: F.taSemi, fontSize: 13.5 },

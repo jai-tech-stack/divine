@@ -1,9 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
+import { DeityImage } from '@/components/DeityImage';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AudioBar, bodyFont, LangBar, ReaderSettings, usePalette, verseFont } from '@/components/reader/ReaderKit';
@@ -25,10 +27,12 @@ export default function MantraReader() {
   const p = useProgress();
   const { pal, prefs } = usePalette();
   const [settings, setSettings] = useState(false);
+  const [showSanskrit, setShowSanskrit] = useState(false);
   const [hi, setHi] = useState(-1);
   const [repeat, setRepeat] = useState(1);
   const [round, setRound] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [sourceError, setSourceError] = useState(false);
   const handle = useRef<{ cancel: () => void } | null>(null);
   const roundRef = useRef(0);
   const scrollRef = useRef<any>(null);
@@ -48,11 +52,19 @@ export default function MantraReader() {
   const g = groupOf(m.deity);
   const enInfo = MANTRAS_EN[m.id];
   const useEn = prefs.meaning === 'en' && !!enInfo;
+  // An original Tamil hymn has no Sanskrit original. Keep its text visible in that setting.
+  const script = m.originalLanguage === 'ta' && prefs.script === 'sa' ? 'ta' : prefs.script;
+  const secondScript = SECOND[script];
+  const formLabel = m.originalLanguage === 'ta' ? 'தமிழ்ப் பாடல்' : m.originalLanguage === 'hi' ? 'இந்தி ஆரத்தி' : m.kind === 'mantra' ? 'மந்திரம்' : 'ஸ்தோத்திரம்';
   const fav = p.mantraFavs.includes(m.id);
   const idx = MANTRAS.findIndex((x) => x.id === m.id);
   const prevM = idx > 0 ? MANTRAS[idx - 1] : null;
   const nextM = idx < MANTRAS.length - 1 ? MANTRAS[idx + 1] : null;
-  const lineText = (l: { ta: string; sa: string; en: string }, s: 'ta' | 'sa' | 'en') => (s === 'ta' ? l.ta : s === 'sa' ? l.sa : l.en);
+  // Tamil transliteration uses superscript digits as scholarly pronunciation marks.
+  // Strip them in the reading, speech and copied text so the screen reader and TTS
+  // do not treat those marks as spoken numbers.
+  const tamilReading = (text: string) => text.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, '');
+  const lineText = (l: { ta: string; sa: string; en: string }, s: 'ta' | 'sa' | 'en') => (s === 'ta' ? tamilReading(l.ta) : s === 'sa' ? l.sa : l.en);
   /** every verse in reading order; long stotrams carry their part */
   const verses: { ta: string; sa: string; en: string; mean?: string; sec?: number; n: number }[] = m.sections
     ? m.sections.flatMap((sec, si) => sec.verses.map((v, k) => ({ ...v, sec: si, n: k + 1 })))
@@ -61,7 +73,7 @@ export default function MantraReader() {
 
   const runRound = () => {
     handle.current = chantAlong(
-      verses.map((l) => l.ta),
+      verses.map((l) => tamilReading(l.ta)),
       {
         onLine: setHi,
         onDone: () => {
@@ -97,7 +109,7 @@ export default function MantraReader() {
     router.replace(`/mantras/${to}`);
   };
   const share = () =>
-    Share.share({ message: `${m.name}\n\n${m.lines.map((l, i) => `${lineText(l, prefs.script)}\n${useEn ? enInfo.mean[i] : l.mean}`).join('\n\n')}\n\nDivine Life` }).catch(() => {});
+    Share.share({ message: `${m.name}\n\n${verses.map((l) => `${lineText(l, script)}\n${l.mean ?? ''}`).join('\n\n')}${m.practice ? `\n\nஎப்போது சொல்லலாம்?\n${m.practice.days}\n\nஎப்படிச் சொல்லலாம்?\n${m.practice.steps.join('\n')}` : ''}\n\nDivine Life` }).catch(() => {});
 
   return (
     <View style={{ flex: 1, backgroundColor: pal.bg }}>
@@ -110,7 +122,7 @@ export default function MantraReader() {
             {useEn ? enInfo.name : m.name}
           </Text>
           <Text style={[st.appS, { color: pal.sub }]} numberOfLines={1}>
-            {g.ta} · {m.kind === 'mantra' ? 'மந்திரம்' : 'சுலோகம்'}
+            {g.ta} · {formLabel}
           </Text>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel={fav ? 'பிடித்தவையிலிருந்து நீக்கு' : 'பிடித்தவையில் சேர்'} onPress={() => progress.toggleFav(m.id)} hitSlop={8} style={st.iconBtn}>
@@ -121,26 +133,57 @@ export default function MantraReader() {
         </Pressable>
       </View>
       <LangBar pal={pal} onSettings={() => setSettings(true)} />
+      {m.originalLanguage !== 'ta' && m.originalLanguage !== 'hi' && m.lines.some(l => l.sa.trim()) && (
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: showSanskrit }} onPress={() => setShowSanskrit(!showSanskrit)} style={{ paddingHorizontal: 18, paddingVertical: 12, backgroundColor: pal.card, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.taSemi, fontSize: 13, color: pal.accent }}>{showSanskrit ? 'சம்ஸ்கிருத மூலத்தை மறை' : 'சம்ஸ்கிருத மூலமும் காட்டு'}</Text>
+          <Ionicons name={showSanskrit ? 'chevron-up' : 'chevron-down'} size={18} color={pal.accent} />
+        </Pressable>
+      )}
 
       <ScrollView ref={scrollRef} key={m.id} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 170 }}>
         {/* picture header */}
         <View style={st.hero}>
-          <Image source={g.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
+          <DeityImage source={g.image} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]} resizeMode="cover" />
           <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(20,8,0,0.6)', 'rgba(20,8,0,0.94)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
           <View style={st.heroText}>
             <Text style={st.heroName}>{useEn ? enInfo.name : m.name}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
               <HeroTag icon="person-outline" text={g.ta} />
-              <HeroTag icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={m.kind === 'mantra' ? 'மந்திரம்' : 'ஸ்லோகம்'} />
-              <HeroTag icon="repeat" text={`ஜபம் ${m.japa}`} />
+              <HeroTag icon={m.kind === 'mantra' ? 'radio-button-on' : 'document-text-outline'} text={formLabel} />
+              <HeroTag icon="repeat" text={m.practice ? 'பாராயணம் · 1 முறை' : `விருப்ப எண்ணிக்கை · ${m.japa}`} />
             </View>
           </View>
         </View>
         <Text style={[st.about, { color: pal.sub }, useEn ? { fontSize: 14.5 } : { fontFamily: F.ta }]}>{useEn ? enInfo.about : m.about}</Text>
         <View style={[st.when, { backgroundColor: pal.chip }]}>
           <Ionicons name="time-outline" size={14} color={pal.accent} />
-          <Text style={{ fontFamily: F.ta, fontSize: 12.5, color: pal.ink, flex: 1 }}>{m.when}</Text>
+          <Text style={{ fontFamily: F.ta, fontSize: 12.5, color: pal.ink, flex: 1 }}>வழிபாட்டு வழக்கங்கள்: {m.when}. இது கட்டாய விதி அல்ல; உங்களுக்கு ஏற்ற நேரத்தில் சொல்லலாம்.</Text>
         </View>
+
+        {m.practice && (
+          <View style={[st.practiceCard, { backgroundColor: pal.card, borderColor: pal.line }]}>
+            <Text accessibilityRole="header" style={[st.practiceHeading, { color: pal.accent }]}>எந்த நாட்களில் சொல்லலாம்?</Text>
+            <Text style={[bodyFont('ta', prefs.fontScale, 14), { color: pal.ink }]}>{m.practice.days}</Text>
+            <Text accessibilityRole="header" style={[st.practiceHeading, { color: pal.accent }]}>எப்படிச் சொல்லலாம்?</Text>
+            {m.practice.steps.map((step, index) => (
+              <View key={index} style={st.practiceStep}>
+                <Text style={{ fontFamily: F.num, color: pal.accent, fontSize: 16 }}>{index + 1}.</Text>
+                <Text style={[bodyFont('ta', prefs.fontScale, 14), { color: pal.ink, flex: 1 }]}>{step}</Text>
+              </View>
+            ))}
+            {!!m.practice.note && <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.sub }]}>{m.practice.note}</Text>}
+          </View>
+        )}
+        {m.originalLanguage === 'ta' && prefs.script === 'sa' && (
+          <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.sub }]}>இது தமிழில் இயற்றப்பட்ட பாடல்; தமிழ்மூலம் காட்டப்படுகிறது.</Text>
+        )}
+
+        {!m.source && !m.references?.length && (
+          <View accessibilityRole="alert" style={{ padding: 14, gap: 5, borderRadius: 12, borderWidth: 1, borderColor: pal.line, backgroundColor: pal.chip }}>
+            <Text style={{ fontFamily: F.taSemi, fontSize: 13, color: pal.accent }}>மூல ஒப்பீடு நிலுவையில்</Text>
+            <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.ink }]}>இங்கு காட்டப்படும் பாடப்பதிப்பு, இயற்றுநர், மூலநூல் இன்னும் உறுதிப்படுத்தப்படவில்லை. இதைச் சரிபார்க்கப்பட்ட மூல மந்திரமாகக் கருத வேண்டாம்.</Text>
+          </View>
+        )}
 
         {m.sections && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -170,9 +213,10 @@ export default function MantraReader() {
                   i > 0 && <Ornament pal={pal} />
                 )}
                 <View style={[st.verse, on && { backgroundColor: pal.hi }]}>
-                  {!m.sections && <Text style={[st.num, { color: pal.accent }]}>॥ {l.n} ॥</Text>}
-                  <Text style={[verseFont(prefs.script, prefs.fontScale, m.sections ? 19 : 21), st.center, { color: pal.verse }]}>{lineText(l, prefs.script)}</Text>
-                  {prefs.showTranslit && <Text style={[verseFont(SECOND[prefs.script], prefs.fontScale * 0.78, m.sections ? 19 : 21), st.center, { color: pal.sub }]}>{lineText(l, SECOND[prefs.script])}</Text>}
+                  <Text style={[st.num, { color: pal.accent }]}>॥ {l.n} ॥</Text>
+                  <Text selectable style={[verseFont(script, prefs.fontScale, m.kind === 'mantra' ? 21 : 18), { textAlign: 'left', color: pal.verse }]}>{lineText(l, script)}</Text>
+                  {showSanskrit && m.originalLanguage !== 'ta' && m.originalLanguage !== 'hi' && !!l.sa && <Text selectable style={[verseFont('sa', prefs.fontScale, 19), { textAlign: 'left', color: pal.sub, marginTop: 12 }]}>{l.sa}</Text>}
+                  {prefs.showTranslit && <Text style={[verseFont(secondScript, prefs.fontScale * 0.78, m.sections ? 19 : 21), st.center, { color: pal.sub }]}>{lineText(l, secondScript)}</Text>}
                   {!!l.mean && (
                     <View style={[st.meanBox, { backgroundColor: pal.bg }]}>
                       <Text style={[st.meanH, { color: pal.accent }]}>{useEn ? 'Meaning' : 'பொருள்'}</Text>
@@ -187,11 +231,31 @@ export default function MantraReader() {
 
         <Pressable accessibilityRole="button" onPress={() => router.push('/companion')} style={[st.askRow, { backgroundColor: pal.card, borderColor: pal.accent }]}>
           <Ionicons name="chatbubbles-outline" size={20} color={pal.accent} />
-          <Text style={{ flex: 1, fontFamily: F.taSemi, fontSize: 14, color: pal.ink }}>இந்த மந்திரத்தைப் பற்றித் துணையிடம் கேளுங்கள்</Text>
+          <Text style={{ flex: 1, fontFamily: F.taSemi, fontSize: 14, color: pal.ink }}>கடவுளிடம் கேளுங்கள்</Text>
           <Ionicons name="chevron-forward" size={18} color={pal.accent} />
         </Pressable>
 
-        <Text style={[st.fine, { color: pal.sub }]}>{m.source ? `${m.source} ` : 'மூலம்: பாரம்பரிய சம்ஸ்கிருதம். பொருள்: Divine Life. '}பாரம்பரியப் பயன்கள் நம்பிக்கை சார்ந்தவை; உறுதியளிக்கப்படுபவை அல்ல.</Text>
+        <Text style={[st.fine, { color: pal.sub }]}>
+          {m.source
+            ? ''
+            : 'இந்தப் பாடலின் மூலநூல், இயற்றுநர் மற்றும் இங்கு காட்டப்படும் பாடப்பதிப்பு இன்னும் சரிபார்க்கப்படவில்லை. இதை உறுதிப்படுத்தப்பட்ட மூலப்பாடலாகக் கருத வேண்டாம். '}
+          பாரம்பரியப் பயன்கள் நம்பிக்கை சார்ந்தவை; உறுதியளிக்கப்படுபவை அல்ல.
+        </Text>
+        {!!m.references?.length && (
+          <View style={{ gap: 4 }}>
+            <Text accessibilityRole="header" style={[st.practiceHeading, { color: pal.accent }]}>மூல ஆதாரங்கள்</Text>
+            {m.references.map((reference) => (
+              <Pressable key={reference.url} accessibilityRole="link" accessibilityLabel={reference.title} onPress={() => {
+                setSourceError(false);
+                WebBrowser.openBrowserAsync(reference.url).catch(() => setSourceError(true));
+              }} style={st.sourceLink}>
+                <Text style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.accent, flex: 1 }]}>{reference.title}</Text>
+                <Ionicons name="open-outline" size={16} color={pal.accent} />
+              </Pressable>
+            ))}
+            {sourceError && <Text accessibilityRole="alert" style={[bodyFont('ta', prefs.fontScale, 12), { color: pal.ink }]}>இணைப்பைத் திறக்க முடியவில்லை. மீண்டும் முயலுங்கள்.</Text>}
+          </View>
+        )}
 
         <View style={{ flexDirection: 'row', gap: 10 }}>
           {[prevM, nextM].map((x, k) =>
@@ -251,18 +315,11 @@ function Ornament({ pal }: { pal: ReturnType<typeof usePalette>['pal'] }) {
   );
 }
 
-function Tag({ pal, icon, text }: { pal: ReturnType<typeof usePalette>['pal']; icon: React.ComponentProps<typeof Ionicons>['name']; text: string }) {
-  return (
-    <View style={[st.tag, { backgroundColor: pal.chip }]}>
-      <Ionicons name={icon} size={12} color={pal.sub} />
-      <Text style={{ fontFamily: F.ta, fontSize: 11.5, color: pal.sub }} numberOfLines={1}>
-        {text}
-      </Text>
-    </View>
-  );
-}
-
 const st = StyleSheet.create({
+  practiceCard: { padding: 16, gap: 12, borderWidth: 1, borderRadius: 16 },
+  practiceHeading: { fontFamily: F.taSemi, fontSize: 14, lineHeight: 24 },
+  practiceStep: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  sourceLink: { minHeight: 44, paddingVertical: 10, flexDirection: 'row', gap: 12, alignItems: 'center' },
   appbar: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 8, paddingBottom: 4 },
   iconBtn: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
   appT: { fontFamily: F.taBold, fontSize: 16.5 },

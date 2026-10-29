@@ -49,3 +49,7 @@ example
 /divine-life-app.zip
 *.apk
 *.aab
+credentials.json
+/artifacts/
+/supabase/.temp/
+/.gradle-build-cache/

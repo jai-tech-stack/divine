@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Defs, Ellipse, G, LinearGradient as LG, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, Ellipse, G, LinearGradient as LG, Path, RadialGradient, Stop } from 'react-native-svg';
 
 import type { Backdrop } from '@/content/types';
 
@@ -68,7 +68,7 @@ function rng(seed: number) {
 }
 
 function useLoop(ms: number, paused: boolean, from = 0) {
-  const v = useRef(new Animated.Value(from)).current;
+  const [v] = useState(() => new Animated.Value(from));
   useEffect(() => {
     if (paused) return;
     const l = Animated.loop(Animated.timing(v, { toValue: 1, duration: ms, easing: Easing.linear, useNativeDriver: nd }));
@@ -80,7 +80,7 @@ function useLoop(ms: number, paused: boolean, from = 0) {
 }
 
 function usePulse(ms: number, paused: boolean) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (paused) return;
     const l = Animated.loop(

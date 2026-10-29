@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { type Focus, UpadesamStage } from '@/components/gita/UpadesamStage';
 import { bodyFont, LangBar, ReaderSettings, usePalette } from '@/components/reader/ReaderKit';
 import { chapterVerses, getEn, getNote, GITA_CHAPTERS, MOODS, speakerFor } from '@/content/gita';
 import { streak, useProgress } from '@/lib/progress';
+import { localDateKey } from '@/lib/date';
 import { F } from '@/theme';
 
 /** Gita home in the reading style: the upadesam scene, continue, feelings, 18 steps. */
@@ -23,7 +24,7 @@ export default function GitaHome() {
   const lastEn = prefs.meaning === 'en' ? getEn(last.c, last.v) : undefined;
   const lastText = lastEn?.m ?? getNote(last.c, last.v)?.m ?? chapterVerses(last.c).find((x) => x.v === last.v)?.ta.split('\n')[0];
   const lastSpeaker = speakerFor(last.c, last.v).replace(' கூறினார்', '').replace(' கூறினான்', '');
-  const todays = p.commitments.filter((x) => x.date === new Date().toISOString().slice(0, 10));
+  const todays = p.commitments.filter((x) => x.date === localDateKey());
   const totalRead = p.gitaRead.length;
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function GitaHome() {
           <View style={st.heroText}>
             <Text style={st.kicker}>கிருஷ்ணர் — அர்ஜுனன் உரையாடல்</Text>
             <Text style={st.heroTitle}>பகவத் கீதை</Text>
-            <Text style={st.heroSub}>18 அத்தியாயங்கள் · 700 சுலோகங்கள் · தமிழ் & English பொருள்</Text>
+            <Text style={st.heroSub}>18 அத்தியாயங்கள் · தமிழ் பொருளும் விளக்கமும்</Text>
           </View>
         </View>
 

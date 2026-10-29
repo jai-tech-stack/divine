@@ -1,9 +1,10 @@
+import { DeityImage } from '@/components/DeityImage';
 import { useAudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
@@ -46,15 +47,17 @@ export default function Japa() {
   const [tempo] = useState(2.4);
   const [vol, setVol] = useState(65);
   const [done, setDone] = useState(false);
-  const bell = useAudioPlayer(require('@/assets/audio/bell.wav'));
-  const gong = useAudioPlayer(require('@/assets/audio/gong.wav'));
-  const ripple = useRef(new Animated.Value(0)).current;
-  const pop = useRef(new Animated.Value(1)).current;
-  const burst = useRef(new Animated.Value(0)).current;
+  const bell = useAudioPlayer(require('@/assets/audio/bell.m4a'));
+  const gong = useAudioPlayer(require('@/assets/audio/gong.m4a'));
+  const [ripple] = useState(() => new Animated.Value(0));
+  const [pop] = useState(() => new Animated.Value(1));
+  const [burst] = useState(() => new Animated.Value(0));
   const countRef = useRef(0);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     bell.volume = vol / 100;
+    // eslint-disable-next-line react-hooks/immutability -- Expo Audio exposes mutable native player properties.
     gong.volume = vol / 100;
   }, [vol, bell, gong]);
 
@@ -105,7 +108,7 @@ export default function Japa() {
 
   return (
     <View style={[st.fill, { paddingTop: insets.top, paddingBottom: insets.bottom + 16 }]}>
-      <Image key={deity.id} source={deity.image} resizeMode="cover" style={st.bg} />
+      <DeityImage key={deity.id} source={deity.image} resizeMode="cover" style={st.bg} />
       <LinearGradient colors={['rgba(7,11,20,0.35)', 'rgba(7,11,20,0.75)', C.night]} locations={[0, 0.45, 0.72]} style={StyleSheet.absoluteFill} />
       <Stars />
       <View style={st.header}>
@@ -212,7 +215,7 @@ export default function Japa() {
 }
 
 function Bead({ x, y, lit, current }: { x: number; y: number; lit: boolean; current: boolean }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (!current) {
       v.setValue(0);
@@ -240,7 +243,7 @@ function Bead({ x, y, lit, current }: { x: number; y: number; lit: boolean; curr
 }
 
 function Mandala({ size, offset }: { size: number; offset: number }) {
-  const spin = useRef(new Animated.Value(0)).current;
+  const [spin] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const a = Animated.loop(Animated.timing(spin, { toValue: 1, duration: 90000, easing: Easing.linear, useNativeDriver: native }));
     a.start();
@@ -264,7 +267,7 @@ function Mandala({ size, offset }: { size: number; offset: number }) {
 }
 
 export function OmGlyph({ size }: { size: number }) {
-  const v = useRef(new Animated.Value(0)).current;
+  const [v] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([

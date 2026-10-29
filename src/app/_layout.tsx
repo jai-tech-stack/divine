@@ -1,6 +1,10 @@
-import { CormorantGaramond_500Medium, CormorantGaramond_600SemiBold } from '@expo-google-fonts/cormorant-garamond';
-import { NotoSerifDevanagari_600SemiBold } from '@expo-google-fonts/noto-serif-devanagari';
-import { NotoSerifTamil_400Regular, NotoSerifTamil_600SemiBold, NotoSerifTamil_700Bold, useFonts } from '@expo-google-fonts/noto-serif-tamil';
+import { CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond/500Medium';
+import { CormorantGaramond_600SemiBold } from '@expo-google-fonts/cormorant-garamond/600SemiBold';
+import { NotoSerifDevanagari_600SemiBold } from '@expo-google-fonts/noto-serif-devanagari/600SemiBold';
+import { NotoSerifTamil_400Regular } from '@expo-google-fonts/noto-serif-tamil/400Regular';
+import { NotoSerifTamil_600SemiBold } from '@expo-google-fonts/noto-serif-tamil/600SemiBold';
+import { NotoSerifTamil_700Bold } from '@expo-google-fonts/noto-serif-tamil/700Bold';
+import { useFonts } from 'expo-font';
 import { setAudioModeAsync } from 'expo-audio';
 import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,12 +12,14 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 
 import { C } from '@/theme';
+import { startAccount } from '@/lib/account';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const theme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: C.night, card: C.night, primary: C.gold, text: C.cream } };
 
 export default function RootLayout() {
+  useEffect(startAccount, []);
   const [loaded, error] = useFonts({
     NotoSerifTamil_400Regular,
     NotoSerifTamil_600SemiBold,
@@ -37,6 +43,7 @@ export default function RootLayout() {
     <ThemeProvider value={theme}>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.night }, animation: 'fade' }}>
+        <Stack.Screen name="(main)" />
         <Stack.Screen name="stories/[id]/index" options={{ animation: 'fade', presentation: 'fullScreenModal' }} />
       </Stack>
     </ThemeProvider>

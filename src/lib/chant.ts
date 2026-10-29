@@ -19,7 +19,7 @@ export function chantAlong(lines: string[], opts: { rate?: number; language?: st
       return;
     }
     opts.onLine(i);
-    const text = lines[i].replace(/[|।॥]/g, ' ');
+    const text = lines[i].replace(/[²³⁴]/g, '').replace(/[|।॥]/g, ' ');
     const next = () => {
       if (!cancelled) timer = setTimeout(() => step(i + 1), 250);
     };

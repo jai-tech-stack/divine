@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Animated, Easing, Platform } from 'react-native';
 import Svg, { Circle, Defs, G, Path, RadialGradient, Stop } from 'react-native-svg';
 
@@ -7,8 +7,8 @@ const native = Platform.OS !== 'web';
 
 /** A golden mandala that breathes slowly when idle, quickens when it listens, spins while it thinks, swells while it speaks. */
 export function VoiceOrb({ state, size = 220 }: { state: OrbState; size?: number }) {
-  const breathe = useRef(new Animated.Value(0)).current;
-  const spin = useRef(new Animated.Value(0)).current;
+  const [breathe] = useState(() => new Animated.Value(0));
+  const [spin] = useState(() => new Animated.Value(0));
   useEffect(() => {
     const d = state === 'idle' ? 2600 : state === 'listening' ? 900 : state === 'speaking' ? 620 : 1400;
     const a = Animated.loop(

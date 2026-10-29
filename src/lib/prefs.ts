@@ -18,7 +18,7 @@ export type Prefs = {
 };
 
 const KEY = 'divine-life.prefs.v1';
-let state: Prefs = { deity: 'weekday', script: 'ta', meaning: 'ta', fontScale: 1, readTheme: 'sepia', showTranslit: true };
+let state: Prefs = { deity: 'weekday', script: 'ta', meaning: 'ta', fontScale: 1, readTheme: 'sepia', showTranslit: false };
 let loaded = false;
 const listeners = new Set<(p: Prefs) => void>();
 
@@ -27,13 +27,13 @@ async function load() {
   loaded = true;
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    if (raw) state = { ...state, ...JSON.parse(raw) };
+    if (raw) state = { ...state, ...JSON.parse(raw), script: 'ta', meaning: 'ta', showTranslit: false };
   } catch {}
   listeners.forEach((l) => l(state));
 }
 
 export async function setPrefs(patch: Partial<Prefs>) {
-  state = { ...state, ...patch };
+  state = { ...state, ...patch, script: 'ta', meaning: 'ta', showTranslit: false };
   listeners.forEach((l) => l(state));
   try {
     await AsyncStorage.setItem(KEY, JSON.stringify(state));
