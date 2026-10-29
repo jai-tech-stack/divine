@@ -32,10 +32,12 @@ for (const scene of story.scenes) {
 assert.ok(storiesForBook('nayanmar-stories').some(item => item.id === story.id));
 assert.ok(!storiesForBook('eighteen-puranas').some(item => item.id === story.id));
 assert.equal(storiesForBook('bogar-7000-3').length, 0, 'Do not invent a narrative adaptation for an unfinished source');
-const env = parseEnv(fs.readFileSync('.env.local', 'utf8'));
-const result = await fetch(`${env.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/content_documents?kind=eq.cinema&id=eq.tirunilakanta&select=document`, { headers: { apikey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY }, signal: AbortSignal.timeout(15000) });
-assert.equal(result.status, 200);
-const rows = await result.json();
-assert.equal(rows.length, 1);
-assert.deepEqual(rows[0].document.scenes.map(item => item.lines), story.scenes.map(item => item.lines));
-console.log('Cinema checks passed: five complete Tamil scenes, original art/audio links, source citation, catalog separation and published metadata.');
+if (!process.argv.includes('--offline')) {
+  const env = parseEnv(fs.readFileSync('.env.local', 'utf8'));
+  const result = await fetch(`${env.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/content_documents?kind=eq.cinema&id=eq.tirunilakanta&select=document`, { headers: { apikey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY }, signal: AbortSignal.timeout(15000) });
+  assert.equal(result.status, 200);
+  const rows = await result.json();
+  assert.equal(rows.length, 1);
+  assert.deepEqual(rows[0].document.scenes.map(item => item.lines), story.scenes.map(item => item.lines));
+}
+console.log(`Cinema checks passed: five complete Tamil scenes, source citation and catalog separation${process.argv.includes('--offline') ? ' (live Supabase check skipped)' : ', plus published metadata'}.`);

@@ -4,16 +4,17 @@ import type { Story } from '../types';
 /**
  * Retold in our own words from:
  * அ.ச. ஞானசம்பந்தன், ஞா. மீரா — "பதினெண் புராணங்கள்" (கங்கை புத்தக நிலையம்),
- * 1. பிரம்ம புராணம், பக்கம் 10–13 (Tamil Virtual Academy e-library scan, PDF pp. 38–41).
+ * 1. பிரம்ம புராணம், பக்கம் 10–13 (Tamil Virtual Academy e-library scan, PDF pp. 39–42).
  * The book is cited as the reference; no passage is copied verbatim.
  */
 export const prithu: Story = {
   id: 'prithu',
+  sourceReviewed: true,
   title: 'பிருதுவும் பூமித்தாயும்',
   subtitle: 'சினம் செயலாக மாறிய கதை',
   purana: 'பிரம்ம புராணம்',
   source:
-    'மூலம்: அ.ச. ஞானசம்பந்தன், ஞா. மீரா, "பதினெண் புராணங்கள்", கங்கை புத்தக நிலையம் — பிரம்ம புராணம், பக். 10–13. இங்கு உள்ளது சுருக்கமான மறுகூறல்.',
+    'மூலம்: அ.ச. ஞானசம்பந்தன், ஞா. மீரா, "பதினெண் புராணங்கள்", கங்கை புத்தக நிலையம் — பிரம்ம புராணம், அச்சுப் பக். 10–13 (PDF பக். 39–42) உடன் ஒப்பிடப்பட்டது. இங்கு உள்ளது சுருக்கமான மறுகூறல்; காட்சிப் படங்கள் கலைக் கற்பனை.',
   minutes: 4,
   scenes: [
     {
