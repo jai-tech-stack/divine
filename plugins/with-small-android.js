@@ -6,6 +6,14 @@ android {
     androidResources {
         localeFilters += ['ta', 'en']
     }
+    defaultConfig {
+        externalNativeBuild {
+            cmake {
+                // Keep generated object paths below Windows' legacy MAX_PATH limit.
+                arguments "-DCMAKE_OBJECT_PATH_MAX=220"
+            }
+        }
+    }
     splits {
         abi {
             enable true

@@ -16,5 +16,5 @@
 
 ## Build readiness
 
-- Android version is set to 1.0.4 (versionCode 5). A rebuild is blocked in this Windows environment: `react-native-worklets` CMake/Ninja fails to create an object directory derived from the long absolute checkout path. Earlier APKs remain available but do not include this version increment.
+- Android version is set to 1.0.4 (versionCode 5), and a CMake object-path limit is configured through the Expo config plugin. A rebuild remains blocked in this Windows environment: Ninja fails to create native object directories in `react-native-worklets` and `react-native-reanimated` under the long absolute checkout path. The attempt to build from a `V:` path also fails in Expo autolinking. Earlier APKs remain available but do not include this version increment.
 - iOS cloud build requires a signed-in Expo account and Apple signing setup. EAS currently reports `Not logged in`; no iOS artifact has been produced.
