@@ -12,9 +12,9 @@
 
 - Supabase auth/account checks passed for password login, recovery session, own progress save/read, cross-account isolation, revision conflicts, anonymous-write denial, and logout. Disposable test accounts were deleted. No email was sent, so actual SMTP delivery remains unverified.
 - The live book catalogue matches all ten local books exactly.
-- The live Tirunilakanta cinema metadata does not match the current local scene text. Do not claim that the published cinematic narration is synchronized until this discrepancy is reconciled.
+- The live Tirunilakanta cinema metadata now matches the current reviewed local source. Only that existing episode's text/source metadata was updated; its media URLs and all other records were preserved.
 
 ## Build readiness
 
-- Local Android APKs were built previously. Any content edits after that build require a new APK before distribution.
+- Android version is set to 1.0.4 (versionCode 5). A rebuild is blocked in this Windows environment: `react-native-worklets` CMake/Ninja fails to create an object directory derived from the long absolute checkout path. Earlier APKs remain available but do not include this version increment.
 - iOS cloud build requires a signed-in Expo account and Apple signing setup. EAS currently reports `Not logged in`; no iOS artifact has been produced.

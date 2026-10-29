@@ -2,7 +2,7 @@
   "expo": {
     "name": "Divine Life",
     "slug": "divine-life",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "divinelife",
@@ -15,7 +15,7 @@
       }
     },
     "android": {
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#1A0C04",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
